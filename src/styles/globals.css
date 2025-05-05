@@ -1,0 +1,134 @@
+/* Tailwind Directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Root Color Variables */
+:root {
+  --color-bg: #f7f6f1; /* Soft off-white */
+  --color-bg-secondary: #ffe0b3; /* Light peach */
+  --color-heading: #4f2f17; /* Deep brown */
+  --color-text: #3a2c21; /* Darker brown */
+  --color-muted: #b79a7b; /* Muted beige */
+  --color-accent: #f4a261; /* Warm orange */
+  --color-loqta: #e76f51; /* Rich red-orange */
+
+  --color-slider_1_From: #4f3c1c;
+  --color-slider_1_to: #6b4e23;
+  --color-slider_2_From: #4a2e30;
+  --color-slider_2_to: #703b44;
+  --color-slider_3_From: #2a3d35;
+  --color-slider_3_to: #406852;
+}
+
+[data-theme="dark"] {
+  --color-body: #2d2b28; /* Dark charcoal */
+  --color-card: #3e3b36; /* Dark brown */
+  --color-footer: #3d2a1d; /* Dark coffee brown */
+  --color-accent: #f59e0b; /* Golden yellow */
+  --color-listbg: #4e3b31; /* Rich brown */
+  --color-bg-secondary: #634a3e; /* Dark taupe */
+  --color-heading: #f5e3cc; /* Light cream */
+  --color-text: #e0cda9; /* Soft beige */
+  --color-muted: #9e806b; /* Muted brown */
+  --color-loqta: #e57228; /* Bright orange */
+  --color-footer-text: #f5f5f5; /* Light grey */
+
+  /* Slider Colors for Dark Theme */
+  --color-slider_1_From: #2a1f16;
+  --color-slider_1_to: #3a2a20;
+  --color-slider_2_From: #2e1d1d;
+  --color-slider_2_to: #463030;
+  --color-slider_3_From: #1c2b26;
+  --color-slider_3_to: #2d3f37;
+
+  --color-text-on-slider: #f3f3f3;
+}
+
+[data-theme="light"] {
+  --color-body: #ffffff; /* Pure white */
+  --color-card: #ffffff; /* White */
+  --color-footer: #8e4b3a; /* Warm brown */
+  --color-accent: #f59e0b; /* Golden yellow */
+  --color-listbg: #faf3e0; /* Soft cream */
+  --color-bg-secondary: #fff4d6; /* Light golden */
+  --color-heading: #7c3a1d; /* Rich brown */
+  --color-text: #5c4033; /* Dark brown */
+  --color-muted: #b58c77; /* Muted beige */
+  --color-loqta: #d2691e; /* Chocolate brown */
+  --color-footer-text: #ffffff; /* White */
+  --color-button-bg: #d2691e; /* Rich brown */
+  --color-button-text: #8b4513; /* Dark brown */
+
+  --color-text-on-slider: #eaeaea;
+
+  /* Slider Colors for Light Theme */
+  --color-slider_1_From: #33291a;
+  --color-slider_1_to: #4a3a24;
+  --color-slider_2_From: #3f2929;
+  --color-slider_2_to: #5c3e3e;
+  --color-slider_3_From: #2d3027;
+  --color-slider_3_to: #434d37;
+}
+
+[data-theme="autumn"] {
+  --color-body: #f4e1c1; /* Soft cream */
+  --color-card: #f9f0e2; /* Light beige */
+  --color-footer: #8a4f2f; /* Dark brown */
+  --color-accent: #e08e3c; /* Warm amber */
+  --color-listbg: #f7dfc5; /* Light yellowish */
+  --color-bg-secondary: #ffc078; /* Soft orange */
+  --color-heading: #6b2e0b; /* Dark brown */
+  --color-text: #5c4033; /* Dark brown */
+  --color-muted: #b08977; /* Muted brown */
+  --color-loqta: #b85c2d; /* Copper brown */
+  --color-footer-text: #fffaf2; /* Light cream */
+
+  --color-text-on-slider: #f5e8da;
+
+  /* Slider Colors for Autumn Theme */
+  --color-slider_1_From: #3a2d1d;
+  --color-slider_1_to: #5b4225;
+  --color-slider_2_From: #4b2f1d;
+  --color-slider_2_to: #6b3f2c;
+  --color-slider_3_From: #3f3021;
+  --color-slider_3_to: #5c4028;
+}
+
+[data-theme="calm"] {
+  --color-body: #e9f7ef; /* Soft mint green */
+  --color-card: #ffffff; /* Pure white */
+  --color-footer: #7c5e3c; /* Warm brown */
+  --color-accent: #f4a300; /* Golden yellow */
+  --color-listbg: #f7edc7; /* Light beige */
+  --color-bg-secondary: #e0a96d; /* Warm beige */
+  --color-heading: #4a2c1d; /* Rich brown */
+  --color-text: #3f2a1d; /* Dark brown */
+  --color-muted: #b7956c; /* Soft brown */
+  --color-loqta: #c97c3c; /* Warm amber */
+  --color-footer-text: #f5f5f5; /* Light grey */
+
+  --color-text-on-slider: #f0f2ec;
+
+  /* Slider Colors for Calm Theme */
+  --color-slider_1_From: #2d2a1f;
+  --color-slider_1_to: #3f3925;
+  --color-slider_2_From: #3c3226;
+  --color-slider_2_to: #564830;
+  --color-slider_3_From: #333126;
+  --color-slider_3_to: #4b442d;
+}
+
+/* Apply background color to body */
+body {
+  background-color: var(--color-body);
+}
+
+/* globals.css */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
