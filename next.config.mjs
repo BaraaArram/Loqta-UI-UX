@@ -16,6 +16,7 @@ const nextConfig = {
             },
         ]
     }
+    // i18n removed for now
 };
 
 export default nextConfig;

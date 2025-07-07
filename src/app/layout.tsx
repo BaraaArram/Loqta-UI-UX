@@ -1,31 +1,25 @@
 // src/app/layout.tsx (SERVER COMPONENT)
-import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "@/styles/globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import ThemeProvider from "@/components/ThemeProvider";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import Footer from '@/components/Footer';
+import { CartProvider } from '@/contexts/CartContext';
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
-  title: "Loqta",
-  description: "Loqta e-commerce",
-};
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ThemeProvider>
-          <Navbar />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
-        </ThemeProvider>
+        <CartProvider>
+          <ThemeProvider>
+            <AuthProvider>
+              {children}
+              <Footer />
+            </AuthProvider>
+          </ThemeProvider>
+        </CartProvider>
       </body>
     </html>
   );

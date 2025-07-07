@@ -1,34 +1,286 @@
-import CategoryList from "@/components/CategoryList";
-import ProductList from "@/components/ProductList";
-import Slider from "@/components/Slider";
+"use client";
+import Header from '@/components/Header';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import axios from '../lib/axios';
+import NoData from '@/components/NoData';
+import { useCart } from '@/contexts/CartContext';
+import Swal from 'sweetalert2';
+import { useRouter, useSearchParams } from 'next/navigation';
 
-const HomePage = () => {
+export default function HomePage() {
+  const [email, setEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
+  const [categories, setCategories] = useState<{ name: string; slug: string }[]>([]);
+  const [catLoading, setCatLoading] = useState(false);
+  const [catError, setCatError] = useState('');
+  const [products, setProducts] = useState<any[]>([]);
+  const [prodLoading, setProdLoading] = useState(false);
+  const [prodError, setProdError] = useState('');
+  const { addToCart, loading: cartLoading } = useCart();
+  const [addingToCart, setAddingToCart] = useState<{ [key: string]: boolean }>({});
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [search, setSearch] = useState(searchParams.get('name__icontains') || '');
+  const [category, setCategory] = useState(searchParams.get('category') || '');
+
+  useEffect(() => {
+    setSearch(searchParams.get('name__icontains') || '');
+    setCategory(searchParams.get('category') || '');
+  }, [searchParams]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setCatLoading(true);
+      setCatError('');
+      try {
+        const res = await axios.get('/api/v1/categories/');
+        setCategories(res.data?.data || []);
+      } catch (err: any) {
+        setCatError('Failed to load categories');
+      } finally {
+        setCatLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setProdLoading(true);
+      setProdError('');
+      try {
+        const params = new URLSearchParams();
+        if (search) params.set('name__icontains', search);
+        if (category) params.set('category', category);
+        const res = await axios.get(`/api/v1/products/${params.toString() ? '?' + params.toString() : ''}`);
+        setProducts(res.data?.data || []);
+      } catch (err: any) {
+        setProdError('Failed to load products.');
+        setProducts([]);
+      } finally {
+        setProdLoading(false);
+      }
+    };
+    fetchProducts();
+  }, [search, category]);
+
+  const handleAddToCart = async (productId: string, productName: string) => {
+    setAddingToCart(prev => ({ ...prev, [productId]: true }));
+    
+    try {
+      await addToCart(productId);
+      
+      // Show success alert
+      Swal.fire({
+        title: 'Added to Cart!',
+        text: `${productName} has been added to your cart successfully.`,
+        icon: 'success',
+        timer: 2000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+        toast: true,
+        position: 'top-end',
+        background: '#10b981',
+        color: '#ffffff',
+        customClass: {
+          popup: 'rounded-lg shadow-lg'
+        }
+      });
+      
+    } catch (error: any) {
+      console.error('Failed to add to cart:', error);
+      
+      // Show error alert
+      Swal.fire({
+        title: 'Oops...',
+        text: error.message || 'Failed to add item to cart. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#ef4444',
+        background: '#fef2f2',
+        color: '#991b1b'
+      });
+    } finally {
+      setAddingToCart(prev => ({ ...prev, [productId]: false }));
+    }
+  };
+
+  // Handle search submit
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (search) params.set('name__icontains', search);
+    if (category) params.set('category', category);
+    router.push(`/?${params.toString()}`);
+  };
+
   return (
-    <div className="bg-bodyC text-text">
-      <Slider />
+    <div className="min-h-screen bg-bodyC flex flex-col">
+      <Header />
+      <main className="flex-1 w-full max-w-7xl mx-auto px-2 pt-24 pb-12 flex flex-col gap-12">
+        {/* Hero Section */}
+        <section className="relative flex flex-col md:flex-row items-center justify-between min-h-[55vh] w-full rounded-2xl overflow-hidden shadow-lg mt-4 bg-gradient-to-br from-[#f0f4f8] via-[#e0e7ef] to-accentC/10 dark:from-[#232b3b] dark:via-[#181f2a] dark:to-accentC/10">
+          {/* Subtle abstract background pattern (SVG or gradient, no image) */}
+          <div className="absolute inset-0 pointer-events-none">
+            <svg width="100%" height="100%" viewBox="0 0 1440 320" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full opacity-10">
+              <path fill="#0ea5e9" fillOpacity="0.12" d="M0,160L60,170.7C120,181,240,203,360,197.3C480,192,600,160,720,133.3C840,107,960,85,1080,101.3C1200,117,1320,171,1380,197.3L1440,224L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z" />
+            </svg>
+          </div>
+          <div className="relative z-10 flex flex-1 flex-col items-center md:items-start justify-center w-full max-w-2xl mx-auto px-6 py-20 gap-8 text-center md:text-left">
+            <h1 className="text-4xl md:text-6xl font-extrabold leading-tight text-heading">
+              Discover <span className="text-accentC">Your Favorites</span>
+            </h1>
+            <p className="text-lg md:text-2xl text-muted max-w-xl mx-auto md:mx-0">
+              Shop trending products, exclusive offers, and enjoy a seamless shopping experience with Loqta.
+            </p>
+            <Link href="#featured" className="inline-block px-8 py-4 bg-accentC text-cardC rounded-xl font-bold shadow-md hover:bg-accentC/90 transition text-lg mt-2 focus:outline-none focus:ring-2 focus:ring-accentC">Shop Now</Link>
+          </div>
+          <div className="relative z-10 flex-1 flex justify-center items-center w-full md:w-auto px-6 md:px-0 mt-8 md:mt-0">
+            <img src="/slide1.webp" alt="Featured" className="w-64 h-64 md:w-80 md:h-80 object-cover rounded-3xl shadow-xl border-4 border-white dark:border-cardC bg-white/80" />
+          </div>
+        </section>
 
-      <div className="mt-24 px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-64">
-        <h1 className="text-2xl font-semibold text-heading mb-8">
-          Featured Products
-        </h1>
-        <ProductList />
-      </div>
+        {/* Categories */}
+        <section>
+          <h2 className="text-2xl font-bold text-heading mb-6 flex items-center gap-2"><img src="/category.png" className="h-7 w-7" alt="Categories" />Categories</h2>
+          {catLoading ? (
+            <div>Loading categories...</div>
+          ) : catError ? (
+            <div className="text-red-600">{catError}</div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {categories.map((cat: any) => (
+                <button
+                  key={cat.slug}
+                  className="px-4 py-2 bg-accentC/10 text-accentC rounded-lg font-bold hover:bg-accentC/20 transition border border-accentC/20 shadow-sm"
+                  onClick={() => {
+                    const params = new URLSearchParams(window.location.search);
+                    params.set('category', cat.slug);
+                    router.push(`/?${params.toString()}`);
+                  }}
+                  type="button"
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </section>
 
-      <div className="mt-24">
-        <h1 className="text-2xl font-semibold text-heading px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-64 mb-12">
-          Categories
-        </h1>
-        <CategoryList />
-      </div>
+        {/* Search and filter UI */}
+        <section>
+          <form onSubmit={handleSearch} className="flex gap-2 mb-8">
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search products..."
+              className="flex-1 p-3 border border-muted rounded-lg bg-bodyC text-heading focus:ring-2 focus:ring-accentC"
+            />
+            <select
+              value={category}
+              onChange={e => setCategory(e.target.value)}
+              className="p-3 border border-muted rounded-lg bg-bodyC text-heading focus:ring-2 focus:ring-accentC"
+            >
+              <option value="">All Categories</option>
+              {categories.map(cat => (
+                <option key={cat.slug} value={cat.slug}>{cat.name}</option>
+              ))}
+            </select>
+            <button type="submit" className="bg-accentC text-cardC px-4 py-2 rounded-lg font-bold hover:bg-accentC/90 transition">
+              Search
+            </button>
+          </form>
+        </section>
 
-      <div className="mt-24 px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-64">
-        <h1 className="text-2xl font-semibold text-heading mb-8">
-          New Products
-        </h1>
-        <ProductList />
-      </div>
+        {/* Featured Products (now all products) */}
+        <section id="featured">
+          <h2 className="text-2xl font-bold text-heading mb-6 flex items-center gap-2"><img src="/star.png" className="h-7 w-7" alt="Featured" />Products</h2>
+          {prodLoading ? (
+            <div>Loading products...</div>
+          ) : prodError ? (
+            <div className="text-red-600">{prodError}</div>
+          ) : products.length === 0 ? (
+            <NoData message="No products found." />
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+              {products.map(prod => (
+                <div key={prod.product_id || prod.id} className="bg-cardC rounded-xl shadow p-4 flex flex-col items-center hover:shadow-lg transition group">
+                  <Link href={`/product/${prod.slug || prod.id}`} className="flex flex-col items-center w-full">
+                    <img src={prod.thumbnail || '/product.png'} alt={prod.name} className="h-32 w-32 object-cover rounded mb-2 group-hover:scale-105 transition" />
+                    <div className="font-bold text-heading text-lg mb-1 text-center">{prod.name}</div>
+                    <div className="text-accentC font-semibold mb-2">${prod.price}</div>
+                    <div className="text-muted text-sm mb-3 text-center">Category: {prod.category_detail?.name || prod.category_name}</div>
+                  </Link>
+                  <div className="flex flex-col sm:flex-row gap-2 w-full">
+                    <Link 
+                      href={`/product/${prod.slug || prod.id}`} 
+                      className="flex-1 px-3 py-2 bg-accentC text-cardC rounded-lg font-semibold shadow hover:bg-accentC/90 transition text-center text-sm"
+                    >
+                      View Details
+                    </Link>
+                    <button 
+                      onClick={() => handleAddToCart((prod.product_id || prod.id).toString(), prod.name)}
+                      disabled={addingToCart[prod.product_id || prod.id] || cartLoading}
+                      className={`flex-1 px-3 py-2 rounded-lg font-semibold shadow transition text-sm flex items-center justify-center gap-2 ${
+                        addingToCart[prod.product_id || prod.id] 
+                          ? 'bg-blue-500 text-white cursor-not-allowed' 
+                          : 'bg-green-600 hover:bg-green-700 text-white'
+                      }`}
+                    >
+                      {addingToCart[prod.product_id || prod.id] ? 'Adding...' : 'Add to Cart'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Promotions/Deals */}
+        <section className="bg-accentC/10 rounded-xl p-6 flex flex-col md:flex-row items-center gap-6 shadow">
+          <div className="flex-1">
+            <h3 className="text-xl font-bold text-accentC mb-2">Summer Sale!</h3>
+            <p className="text-muted mb-2">Up to 50% off on select items. Limited time only.</p>
+            <Link href="#featured" className="inline-block px-4 py-2 bg-accentC text-cardC rounded-lg font-bold shadow hover:bg-accentC/80 transition">Shop Deals</Link>
+          </div>
+          <img src="/product.png" alt="Deal" className="w-24 h-24 object-contain" />
+        </section>
+
+        {/* Trust Signals */}
+        <section className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
+          <div className="flex flex-col items-center gap-2 bg-cardC rounded-xl p-4 shadow">
+            <img src="/visa.png" className="h-8 w-8 mx-auto" alt="Secure Payment" />
+            <span className="font-bold text-heading">Secure Payment</span>
+            <span className="text-muted text-sm">100% secure payment with SSL</span>
+          </div>
+          <div className="flex flex-col items-center gap-2 bg-cardC rounded-xl p-4 shadow">
+            <img src="/cart.png" className="h-8 w-8 mx-auto" alt="Fast Delivery" />
+            <span className="font-bold text-heading">Fast Delivery</span>
+            <span className="text-muted text-sm">Quick & reliable shipping</span>
+          </div>
+          <div className="flex flex-col items-center gap-2 bg-cardC rounded-xl p-4 shadow">
+            <img src="/notification.png" className="h-8 w-8 mx-auto" alt="Support" />
+            <span className="font-bold text-heading">24/7 Support</span>
+            <span className="text-muted text-sm">We're here to help anytime</span>
+          </div>
+          <div className="flex flex-col items-center gap-2 bg-cardC rounded-xl p-4 shadow">
+            <img src="/star.png" className="h-8 w-8 mx-auto" alt="Quality" />
+            <span className="font-bold text-heading">Top Quality</span>
+            <span className="text-muted text-sm">Best products guaranteed</span>
+          </div>
+        </section>
+      </main>
+      <style jsx global>{`
+        .neon-glow {
+          text-shadow: 0 0 8px #0ea5e9, 0 0 16px #0ea5e9, 0 0 32px #0ea5e9;
+          box-shadow: 0 0 16px #0ea5e9, 0 0 32px #0ea5e9;
+        }
+        .neon-glow-img {
+          box-shadow: 0 0 32px #0ea5e9, 0 0 64px #0ea5e9;
+        }
+      `}</style>
     </div>
   );
-};
-
-export default HomePage;
+} 

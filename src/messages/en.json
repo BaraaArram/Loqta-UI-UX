@@ -1,0 +1,18 @@
+{
+  "dashboard": "Dashboard",
+  "profile": "Profile",
+  "logout": "Logout",
+  "theme": "Theme",
+  "language": "Language",
+  "welcome": "Welcome to your Dashboard",
+  "manage_products": "View and manage your products. This is your central hub for all product activity.",
+  "loading_products": "Loading products...",
+  "error_loading_products": "Failed to load products",
+  "password_changed": "Password changed successfully.",
+  "dismiss": "Dismiss",
+  "edit_profile": "Edit Profile",
+  "save": "Save",
+  "cancel": "Cancel",
+  "update_success": "Profile updated successfully!",
+  "update_error": "Failed to update profile"
+} 

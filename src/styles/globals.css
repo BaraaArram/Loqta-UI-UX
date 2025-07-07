@@ -132,3 +132,40 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+@import "@fontsource/cairo/index.css";
+
+html {
+  font-family: 'Cairo', system-ui, sans-serif;
+}
+
+html[dir="rtl"] {
+  direction: rtl;
+  font-family: 'Cairo', system-ui, sans-serif;
+}
+
+body {
+  background: theme('colors.bazaar.light');
+  color: theme('colors.bazaar.accent2');
+}
+
+body.theme-bazaar {
+  background: theme('colors.bazaar.light');
+  color: theme('colors.bazaar.accent2');
+}
+body.theme-bazaar-dark {
+  background: theme('colors.bazaar.dark');
+  color: #fff;
+}
+body.theme-autumn {
+  background: theme('colors.autumn.light');
+  color: theme('colors.autumn.dark');
+}
+body.theme-calm {
+  background: theme('colors.calm.light');
+  color: theme('colors.calm.dark');
+}
+body.theme-dark {
+  background: #181818;
+  color: #fff;
+}
