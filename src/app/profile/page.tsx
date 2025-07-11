@@ -18,12 +18,12 @@ interface UserProfile {
 }
 
 const ProfilePage = () => {
-  const { accessToken, logout, isAuthenticated, hydrated } = useAuth();
+  const { accessToken, logout, isAuthenticated, hydrated, loading } = useAuth();
   const router = useRouter();
   const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
   const [showPasswordChanged, setShowPasswordChanged] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [userLoading, setUserLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState<any>(null);
@@ -39,7 +39,7 @@ const ProfilePage = () => {
         setError("No access token available. Please log in again.");
         return;
       }
-      setLoading(true);
+      setUserLoading(true);
       setError(null);
       try {
         const { data } = await api.get('/auth/me/', {
@@ -51,7 +51,7 @@ const ProfilePage = () => {
       } catch (err: any) {
         setError(err.message || "Failed to fetch user data");
       } finally {
-        setLoading(false);
+        setUserLoading(false);
       }
     };
     fetchUser();
@@ -69,17 +69,21 @@ const ProfilePage = () => {
   }, []);
 
   useEffect(() => {
-    if (hydrated && !isAuthenticated) {
+    if (!hydrated || loading) return;
+    if (!isAuthenticated) {
       router.replace('/login');
     }
-  }, [hydrated, isAuthenticated, router]);
+  }, [hydrated, loading, isAuthenticated, router]);
 
-  if (!hydrated) {
+  if (!hydrated || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bodyC">
         <div className="text-accentC text-xl font-bold animate-pulse">Checking authentication...</div>
       </div>
     );
+  }
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (
@@ -88,7 +92,7 @@ const ProfilePage = () => {
       <main className="w-full max-w-5xl mx-auto flex-1 flex flex-col gap-8">
         {/* User Info Card */}
         <section className="bg-cardC rounded-2xl shadow-lg p-8 flex flex-col items-center relative">
-          {loading && (
+          {userLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-cardC/80 z-10 rounded-2xl">
               <ArrowPathIcon className="animate-spin h-8 w-8 text-accentC" />
             </div>

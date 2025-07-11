@@ -484,7 +484,6 @@ function ReviewsSection({ productSlug, product }: { productSlug: string, product
       <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
         Reviews
         <span className="text-base font-normal text-muted">({reviews.length})</span>
-        {/* No average rating in new API, so omit */}
       </h2>
       {loading ? (
         <div className="py-8 flex flex-col gap-4">
@@ -506,7 +505,11 @@ function ReviewsSection({ productSlug, product }: { productSlug: string, product
       ) : (
         <Fragment>
           {reviews.length === 0 ? (
-            <NoData message="No reviews yet. Be the first to review!" />
+            <div className="flex flex-col items-center justify-center py-8 text-muted">
+              <span className="text-5xl mb-2">📝</span>
+              <div className="text-lg font-semibold mb-1">No reviews yet</div>
+              <div className="text-base">Be the first to share your thoughts!</div>
+            </div>
           ) : (
             <div className="flex flex-col gap-4 max-h-96 overflow-y-auto pr-2">
               {reviews.map((review: any, idx: number) => {
@@ -515,17 +518,21 @@ function ReviewsSection({ productSlug, product }: { productSlug: string, product
                   typeof review.user === 'string' &&
                   typeof meUsername === 'string' &&
                   review.user.trim().toLowerCase() === meUsername.trim().toLowerCase();
-                console.log('Review user:', review.user, 'Current user (me):', meUsername, 'isOwnReview:', isOwnReview);
+                // Generate a pastel color for avatar
+                const pastelColors = ['bg-pink-100 text-pink-700', 'bg-blue-100 text-blue-700', 'bg-green-100 text-green-700', 'bg-yellow-100 text-yellow-700', 'bg-purple-100 text-purple-700', 'bg-orange-100 text-orange-700'];
+                const colorIdx = review.user ? review.user.charCodeAt(0) % pastelColors.length : 0;
                 return (
-                  <div key={idx} className="bg-white/80 dark:bg-bodyC/80 rounded-xl p-4 shadow flex flex-col md:flex-row gap-4 border border-muted/20 relative group transition hover:shadow-lg">
-                    <div className="flex-shrink-0 flex flex-col items-center gap-2 w-20">
-                      <div className="w-12 h-12 rounded-full bg-accentC/10 flex items-center justify-center text-accentC font-bold text-lg">
-                        {review.user ? review.user[0]?.toUpperCase() : '?'}
-                      </div>
+                  <div key={idx} className="bg-cardC rounded-2xl p-5 shadow-md flex flex-col md:flex-row gap-4 border border-muted/20 relative group transition hover:shadow-xl">
+                    <div className={`flex-shrink-0 flex flex-col items-center gap-2 w-20`}>
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow ${pastelColors[colorIdx]} bg-accentC/10 text-accentC`}>{review.user ? review.user[0]?.toUpperCase() : '?'}</div>
                     </div>
                     <div className="flex-1 flex flex-col gap-1">
                       <div className="flex items-center gap-2">
-                        {renderStars(review.rating)}
+                        <span className="flex items-center gap-0.5">
+                          {[...Array(5)].map((_, i) => (
+                            <svg key={i} className={`h-6 w-6 ${i < review.rating ? 'text-yellow-400' : 'text-muted/30'} transition`} fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.388-2.46a1 1 0 00-1.175 0l-3.388 2.46c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118l-3.388-2.46c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.967z" /></svg>
+                          ))}
+                        </span>
                         <span className="text-xs text-muted ml-2">{dayjs(review.created).fromNow()}</span>
                       </div>
                       <span className="text-xs text-muted font-semibold mb-1 text-left w-full break-words">{review.user || 'User'}</span>
@@ -534,7 +541,7 @@ function ReviewsSection({ productSlug, product }: { productSlug: string, product
                           <div className="flex items-center gap-2">
                             {[1,2,3,4,5].map((star) => (
                               <button type="button" key={star} onClick={() => setEditForm(f => ({...f, rating: star}))} className={editForm.rating >= star ? 'text-yellow-400' : 'text-muted/30'}>
-                                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.388-2.46a1 1 0 00-1.175 0l-3.388 2.46c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118l-3.388-2.46c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.967z" /></svg>
+                                <svg className="h-7 w-7 transition-transform transform hover:scale-110 focus:scale-110" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.388-2.46a1 1 0 00-1.175 0l-3.388 2.46c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118l-3.388-2.46c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.967z" /></svg>
                               </button>
                             ))}
                           </div>
@@ -549,7 +556,7 @@ function ReviewsSection({ productSlug, product }: { productSlug: string, product
                       )}
                     </div>
                     {isOwnReview && editingId !== idx && (
-                      <div className="absolute top-2 right-2 flex gap-2 opacity-100 group-hover:opacity-100 transition">
+                      <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100 transition">
                         <button
                           className="p-2 rounded-full bg-accentC/10 hover:bg-accentC/20 text-accentC transition flex items-center justify-center"
                           title="Edit Review"
@@ -578,12 +585,12 @@ function ReviewsSection({ productSlug, product }: { productSlug: string, product
       )}
       {/* Add Review Form */}
       {hydrated && isAuthenticated && !reviews.some(r => r.user === user?.username) && (
-        <form onSubmit={handleAddReview} className="mt-8 bg-white/80 dark:bg-bodyC/80 rounded-xl p-4 shadow flex flex-col gap-2 border border-muted/20 animate-fade-in">
+        <form onSubmit={handleAddReview} className="mt-8 bg-cardC rounded-2xl p-6 shadow flex flex-col gap-3 border border-muted/20 animate-fade-in">
           <div className="flex items-center gap-2 mb-2">
             <span className="font-semibold">Your Rating:</span>
             {[1,2,3,4,5].map((star) => (
               <button type="button" key={star} onClick={() => setForm(f => ({...f, rating: star}))} className={form.rating >= star ? 'text-yellow-400' : 'text-muted/30'}>
-                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.388-2.46a1 1 0 00-1.175 0l-3.388 2.46c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118l-3.388-2.46c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.967z" /></svg>
+                <svg className="h-7 w-7 transition-transform transform hover:scale-110 focus:scale-110" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.388-2.46a1 1 0 00-1.175 0l-3.388 2.46c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118l-3.388-2.46c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.967z" /></svg>
               </button>
             ))}
           </div>

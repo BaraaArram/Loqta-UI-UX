@@ -1,12 +1,13 @@
 "use client";
 import Header from '@/components/Header';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import axios from '../lib/axios';
 import NoData from '@/components/NoData';
 import { useCart } from '@/contexts/CartContext';
 import Swal from 'sweetalert2';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { XMarkIcon, FunnelIcon, TagIcon, CurrencyDollarIcon, CubeIcon, ArrowUpIcon } from '@heroicons/react/24/outline';
 
 export default function HomePage() {
   const [email, setEmail] = useState('');
@@ -21,13 +22,24 @@ export default function HomePage() {
   const [addingToCart, setAddingToCart] = useState<{ [key: string]: boolean }>({});
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [search, setSearch] = useState(searchParams.get('name__icontains') || '');
-  const [category, setCategory] = useState(searchParams.get('category') || '');
+  // Initialize state from URL on mount only
+  const [search, setSearch] = useState(() => searchParams.get('name__icontains') || '');
+  const [category, setCategory] = useState(() => searchParams.get('category__slug') || '');
+  // Advanced filter state
+  const [priceMin, setPriceMin] = useState('');
+  const [priceMax, setPriceMax] = useState('');
+  const [stockMin, setStockMin] = useState('');
+  const [stockMax, setStockMax] = useState('');
+  const [tag, setTag] = useState('');
+  const [ordering, setOrdering] = useState('');
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
-  useEffect(() => {
-    setSearch(searchParams.get('name__icontains') || '');
-    setCategory(searchParams.get('category') || '');
-  }, [searchParams]);
+  // For instant filtering debounce
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const [showFilterModal, setShowFilterModal] = useState(false);
+
+  // No useEffect syncing state from URL after mount!
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -52,9 +64,26 @@ export default function HomePage() {
       try {
         const params = new URLSearchParams();
         if (search) params.set('name__icontains', search);
-        if (category) params.set('category', category);
-        const res = await axios.get(`/api/v1/products/${params.toString() ? '?' + params.toString() : ''}`);
-        setProducts(res.data?.data || []);
+        if (category) params.set('category__slug', category);
+        if (priceMin) params.set('price__gt', priceMin);
+        if (priceMax) params.set('price__lt', priceMax);
+        if (stockMin) params.set('stock__gt', stockMin);
+        if (stockMax) params.set('stock__lt', stockMax);
+        if (tag) params.set('tag', tag);
+        if (ordering) params.set('ordering', ordering);
+        const url = `/api/v1/products/${params.toString() ? '?' + params.toString() : ''}`;
+        console.log('Fetching products from:', url);
+        const res = await axios.get(url);
+        console.log('Products API response:', res.data);
+        let products = [];
+        if (Array.isArray(res.data?.data)) {
+          products = res.data.data;
+        } else if (Array.isArray(res.data?.results)) {
+          products = res.data.results;
+        } else if (Array.isArray(res.data)) {
+          products = res.data;
+        }
+        setProducts(products);
       } catch (err: any) {
         setProdError('Failed to load products.');
         setProducts([]);
@@ -63,7 +92,20 @@ export default function HomePage() {
       }
     };
     fetchProducts();
-  }, [search, category]);
+  }, [search, category, priceMin, priceMax, stockMin, stockMax, tag, ordering]);
+
+  // Debounced instant filtering for text/tag
+  useEffect(() => {
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    debounceTimeout.current = setTimeout(() => {
+      setSearch(search);
+      setTag(tag);
+    }, 300);
+    return () => {
+      if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    };
+    // eslint-disable-next-line
+  }, [search, tag]);
 
   const handleAddToCart = async (productId: string, productName: string) => {
     setAddingToCart(prev => ({ ...prev, [productId]: true }));
@@ -106,14 +148,18 @@ export default function HomePage() {
     }
   };
 
-  // Handle search submit
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    const params = new URLSearchParams();
-    if (search) params.set('name__icontains', search);
-    if (category) params.set('category', category);
-    router.push(`/?${params.toString()}`);
-  };
+  // No explicit search submit needed for instant filtering
+
+  // Build chips for active filters
+  const filterChips = [];
+  if (category) filterChips.push({ label: categories.find(c => c.slug === category)?.name || category, onRemove: () => setCategory('') });
+  if (search) filterChips.push({ label: `Search: ${search}`, onRemove: () => setSearch('') });
+  if (priceMin) filterChips.push({ label: `Min $${priceMin}`, onRemove: () => setPriceMin('') });
+  if (priceMax) filterChips.push({ label: `Max $${priceMax}`, onRemove: () => setPriceMax('') });
+  if (stockMin) filterChips.push({ label: `Min Stock ${stockMin}`, onRemove: () => setStockMin('') });
+  if (stockMax) filterChips.push({ label: `Max Stock ${stockMax}`, onRemove: () => setStockMax('') });
+  if (tag) filterChips.push({ label: `Tag: ${tag}`, onRemove: () => setTag('') });
+  if (ordering) filterChips.push({ label: `Order: ${ordering.replace('-', '')} ${ordering.startsWith('-') ? '↓' : '↑'}`, onRemove: () => setOrdering('') });
 
   return (
     <div className="min-h-screen bg-bodyC flex flex-col">
@@ -141,57 +187,115 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Categories */}
-        <section>
-          <h2 className="text-2xl font-bold text-heading mb-6 flex items-center gap-2"><img src="/category.png" className="h-7 w-7" alt="Categories" />Categories</h2>
-          {catLoading ? (
-            <div>Loading categories...</div>
-          ) : catError ? (
-            <div className="text-red-600">{catError}</div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        {/* Filter Card (search, filters, category buttons) */}
+        <section className="mb-8">
+          <div className="bg-cardC rounded-xl shadow p-4 flex flex-col gap-4 w-full max-w-4xl mx-auto">
+            {/* Search Bar Row */}
+            <div className="flex w-full mb-2">
+              <input
+                type="text"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search products..."
+                className="flex-1 p-3 border border-muted rounded-lg bg-bodyC text-heading focus:ring-2 focus:ring-accentC focus:border-accentC transition shadow-sm"
+                aria-label="Search products"
+                autoComplete="off"
+              />
+            </div>
+            {/* Filters Row */}
+            <div className="flex flex-wrap gap-2 md:gap-4 w-full">
+              <input
+                type="number"
+                min="0"
+                value={priceMin}
+                onChange={e => setPriceMin(e.target.value)}
+                placeholder="Min Price"
+                className="w-28 p-2 border border-muted rounded-lg bg-bodyC text-heading focus:ring-2 focus:ring-accentC focus:border-accentC text-sm transition shadow-sm"
+                aria-label="Min price"
+                title="Minimum price"
+              />
+              <input
+                type="number"
+                min="0"
+                value={priceMax}
+                onChange={e => setPriceMax(e.target.value)}
+                placeholder="Max Price"
+                className="w-28 p-2 border border-muted rounded-lg bg-bodyC text-heading focus:ring-2 focus:ring-accentC focus:border-accentC text-sm transition shadow-sm"
+                aria-label="Max price"
+                title="Maximum price"
+              />
+              <input
+                type="number"
+                min="0"
+                value={stockMin}
+                onChange={e => setStockMin(e.target.value)}
+                placeholder="Min Stock"
+                className="w-28 p-2 border border-muted rounded-lg bg-bodyC text-heading focus:ring-2 focus:ring-accentC focus:border-accentC text-sm transition shadow-sm"
+                aria-label="Min stock"
+                title="Minimum stock"
+              />
+              <input
+                type="number"
+                min="0"
+                value={stockMax}
+                onChange={e => setStockMax(e.target.value)}
+                placeholder="Max Stock"
+                className="w-28 p-2 border border-muted rounded-lg bg-bodyC text-heading focus:ring-2 focus:ring-accentC focus:border-accentC text-sm transition shadow-sm"
+                aria-label="Max stock"
+                title="Maximum stock"
+              />
+              <input
+                type="text"
+                value={tag}
+                onChange={e => setTag(e.target.value)}
+                placeholder="Tag"
+                className="w-32 p-2 border border-muted rounded-lg bg-bodyC text-heading focus:ring-2 focus:ring-accentC focus:border-accentC text-sm transition shadow-sm"
+                aria-label="Tag"
+                title="Product tag"
+              />
+              <select
+                value={ordering}
+                onChange={e => setOrdering(e.target.value)}
+                className="w-40 p-2 border border-muted rounded-lg bg-bodyC text-heading focus:ring-2 focus:ring-accentC focus:border-accentC text-sm transition shadow-sm"
+                aria-label="Order by"
+                title="Order by"
+              >
+                <option value="">Order By</option>
+                <option value="price">Price: Low to High</option>
+                <option value="-price">Price: High to Low</option>
+                <option value="name">Name: A-Z</option>
+                <option value="-name">Name: Z-A</option>
+                <option value="stock">Stock: Low to High</option>
+                <option value="-stock">Stock: High to Low</option>
+              </select>
+            </div>
+            {/* Horizontally Scrollable Category Buttons */}
+            <div className="flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-accentC/30 scrollbar-track-transparent py-2 -mx-2 px-2 items-center">
+              {category && (
+                <button
+                  className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full border border-muted bg-transparent text-muted hover:bg-red-100 hover:text-red-500 focus:bg-red-100 focus:text-red-500 transition focus:outline-none focus:ring-2 focus:ring-accentC/50"
+                  onClick={() => setCategory('')}
+                  type="button"
+                  aria-label="Clear category filter"
+                  title="Clear category filter"
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
+              )}
               {categories.map((cat: any) => (
                 <button
                   key={cat.slug}
-                  className="px-4 py-2 bg-accentC/10 text-accentC rounded-lg font-bold hover:bg-accentC/20 transition border border-accentC/20 shadow-sm"
-                  onClick={() => {
-                    const params = new URLSearchParams(window.location.search);
-                    params.set('category', cat.slug);
-                    router.push(`/?${params.toString()}`);
-                  }}
+                  className={`flex-shrink-0 px-4 py-2 rounded-lg font-bold border shadow-sm transition focus:outline-none focus:ring-2 focus:ring-accentC/50 text-accentC border-accentC/20 bg-accentC/10 hover:bg-accentC/20 focus:bg-accentC/20 ${category === cat.slug ? 'bg-accentC text-cardC border-accentC shadow scale-105' : ''}`}
+                  onClick={() => setCategory(cat.slug)}
                   type="button"
+                  aria-label={`Filter by category ${cat.name}`}
+                  title={cat.name}
                 >
                   {cat.name}
                 </button>
               ))}
             </div>
-          )}
-        </section>
-
-        {/* Search and filter UI */}
-        <section>
-          <form onSubmit={handleSearch} className="flex gap-2 mb-8">
-            <input
-              type="text"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search products..."
-              className="flex-1 p-3 border border-muted rounded-lg bg-bodyC text-heading focus:ring-2 focus:ring-accentC"
-            />
-            <select
-              value={category}
-              onChange={e => setCategory(e.target.value)}
-              className="p-3 border border-muted rounded-lg bg-bodyC text-heading focus:ring-2 focus:ring-accentC"
-            >
-              <option value="">All Categories</option>
-              {categories.map(cat => (
-                <option key={cat.slug} value={cat.slug}>{cat.name}</option>
-              ))}
-            </select>
-            <button type="submit" className="bg-accentC text-cardC px-4 py-2 rounded-lg font-bold hover:bg-accentC/90 transition">
-              Search
-            </button>
-          </form>
+          </div>
         </section>
 
         {/* Featured Products (now all products) */}
@@ -200,9 +304,73 @@ export default function HomePage() {
           {prodLoading ? (
             <div>Loading products...</div>
           ) : prodError ? (
-            <div className="text-red-600">{prodError}</div>
+            <div className="flex flex-col items-center justify-center py-16">
+              <div className="bg-red-50 border border-red-200 rounded-2xl shadow-lg p-8 flex flex-col items-center w-full max-w-md" aria-live="polite">
+                <div className="text-2xl font-extrabold text-red-600 mb-2">Oops! We couldn’t load products</div>
+                <div className="text-muted mb-4 text-center">This could be a network issue or a temporary glitch. Please try again, or clear your filters and try once more.</div>
+                <div className="flex gap-2">
+                  <button
+                    className="px-6 py-2 bg-accentC text-cardC rounded-lg font-bold shadow hover:bg-accentC/90 transition focus:outline-none focus:ring-2 focus:ring-accentC"
+                    onClick={() => {
+                      // Re-fetch products without reload
+                      setProdError('');
+                      setProdLoading(true);
+                      const fetchProducts = async () => {
+                        try {
+                          const params = new URLSearchParams();
+                          if (search) params.set('name__icontains', search);
+                          if (category) params.set('category__slug', category);
+                          if (priceMin) params.set('price__gt', priceMin);
+                          if (priceMax) params.set('price__lt', priceMax);
+                          if (stockMin) params.set('stock__gt', stockMin);
+                          if (stockMax) params.set('stock__lt', stockMax);
+                          if (tag) params.set('tag', tag);
+                          if (ordering) params.set('ordering', ordering);
+                          const url = `/api/v1/products/${params.toString() ? '?' + params.toString() : ''}`;
+                          const res = await axios.get(url);
+                          let products = [];
+                          if (Array.isArray(res.data?.data)) {
+                            products = res.data.data;
+                          } else if (Array.isArray(res.data?.results)) {
+                            products = res.data.results;
+                          } else if (Array.isArray(res.data)) {
+                            products = res.data;
+                          }
+                          setProducts(products);
+                          setProdError('');
+                        } catch (err: any) {
+                          setProdError('Failed to load products.');
+                          setProducts([]);
+                        } finally {
+                          setProdLoading(false);
+                        }
+                      };
+                      fetchProducts();
+                    }}
+                  >
+                    Try Again
+                  </button>
+                  <button
+                    className="px-6 py-2 bg-muted text-cardC rounded-lg font-bold shadow hover:bg-muted/80 transition focus:outline-none focus:ring-2 focus:ring-accentC"
+                    onClick={() => { setSearch(''); setCategory(''); setPriceMin(''); setPriceMax(''); setStockMin(''); setStockMax(''); setTag(''); setOrdering(''); router.replace('/', { scroll: false }); }}
+                  >
+                    Clear All Filters
+                  </button>
+                </div>
+              </div>
+            </div>
           ) : products.length === 0 ? (
-            <NoData message="No products found." />
+            <div className="flex flex-col items-center justify-center py-16">
+              <img src="/no-data.svg" alt="No products" className="w-32 h-32 mb-4 opacity-70" />
+              <div className="text-2xl font-bold text-muted mb-2">No products found</div>
+              <div className="text-muted mb-4">Try clearing your filters or searching for something else.</div>
+              <button
+                className="px-6 py-2 bg-accentC text-cardC rounded-lg font-bold shadow hover:bg-accentC/90 transition"
+                onClick={() => { setSearch(''); setCategory(''); setPriceMin(''); setPriceMax(''); setStockMin(''); setStockMax(''); setTag(''); setOrdering(''); router.replace('/', { scroll: false }); }}
+              >
+                Clear All Filters
+              </button>
+                </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
               {products.map(prod => (

@@ -139,7 +139,7 @@ const CategoriesPage = () => {
             ) : (
               <ul className="flex flex-col gap-4">
                 {categories.map((cat) => (
-                  <li key={cat.slug} className="flex items-center gap-4 bg-white dark:bg-zinc-900 rounded-xl shadow p-4 border border-muted/10 hover:shadow-lg transition group">
+                  <li key={cat.slug} className="flex items-center gap-4 bg-cardC rounded-xl shadow p-4 border border-muted/10 hover:shadow-lg transition group">
                     <span className="bg-accentC/10 text-accentC rounded-full p-3">
                       <TagIcon className="h-6 w-6" />
                     </span>
@@ -167,7 +167,7 @@ const CategoriesPage = () => {
         {/* Add Category Modal */}
         {showAdd && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-8 w-full max-w-md relative">
+            <div className="bg-cardC rounded-xl shadow-lg p-8 w-full max-w-md relative">
               <button
                 className="absolute top-2 right-2 text-2xl text-muted hover:text-accentC font-bold"
                 onClick={() => setShowAdd(false)}
@@ -201,7 +201,7 @@ const CategoriesPage = () => {
         {/* Edit Category Modal */}
         {editCategory && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-8 w-full max-w-md relative">
+            <div className="bg-cardC rounded-xl shadow-lg p-8 w-full max-w-md relative">
               <button
                 className="absolute top-2 right-2 text-2xl text-muted hover:text-accentC font-bold"
                 onClick={() => setEditCategory(null)}
@@ -236,7 +236,7 @@ const CategoriesPage = () => {
         {/* Delete Confirmation Modal */}
         {deleteCategory && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-8 w-full max-w-md relative">
+            <div className="bg-cardC rounded-xl shadow-lg p-8 w-full max-w-md relative">
               <button
                 className="absolute top-2 right-2 text-2xl text-muted hover:text-accentC font-bold"
                 onClick={() => setDeleteCategory(null)}

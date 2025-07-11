@@ -8,11 +8,11 @@ import Swal from 'sweetalert2';
 import Link from 'next/link';
 
 const ProductsPage = () => {
-  const { user, isAuthenticated, hydrated } = useAuth();
+  const { user, isAuthenticated, hydrated, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  // Debug log for auth state at render
-  console.log('PRODUCT PAGE AUTH STATE', { hydrated, isAuthenticated });
+  // Debug log for auth state at render (match profile page)
+  console.log('PRODUCT PAGE AUTH STATE', { hydrated, isAuthenticated, loading });
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -22,7 +22,7 @@ const ProductsPage = () => {
     tags: '',
   });
   const [thumbnail, setThumbnail] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [productsLoading, setProductsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [categories, setCategories] = useState<any[]>([]);
@@ -35,6 +35,7 @@ const ProductsPage = () => {
   const [search, setSearch] = useState(searchParams.get('name__icontains') || '');
   const [category, setCategory] = useState(searchParams.get('category') || '');
 
+  // All other useEffects (fetchCategories, fetchProducts, etc.) should only run after hydrated
   useEffect(() => {
     if (!hydrated) return;
     const fetchCategories = async () => {
@@ -53,14 +54,16 @@ const ProductsPage = () => {
   }, [hydrated]);
 
   useEffect(() => {
+    if (!hydrated) return;
     setCategory(searchParams.get('category') || '');
-  }, [searchParams]);
+  }, [hydrated, searchParams]);
 
   useEffect(() => {
-    if (hydrated && !isAuthenticated) {
+    if (!hydrated || loading) return;
+    if (!isAuthenticated) {
       router.replace('/login');
     }
-  }, [hydrated, isAuthenticated, router]);
+  }, [hydrated, loading, isAuthenticated, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -93,7 +96,7 @@ const ProductsPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setProductsLoading(true);
     setError('');
     setSuccess('');
     setFieldErrors({});
@@ -140,7 +143,7 @@ const ProductsPage = () => {
         setFieldErrors(apiErrors);
       }
     } finally {
-      setLoading(false);
+      setProductsLoading(false);
     }
   };
 
@@ -155,8 +158,9 @@ const ProductsPage = () => {
 
   // Fetch products with filters
   useEffect(() => {
+    if (!hydrated) return;
     const fetchProducts = async () => {
-      setLoading(true);
+      setProductsLoading(true);
       setError('');
       try {
         const query = buildQuery();
@@ -166,11 +170,11 @@ const ProductsPage = () => {
         setError('Failed to load products.');
         setProducts([]);
       } finally {
-        setLoading(false);
+        setProductsLoading(false);
       }
     };
     fetchProducts();
-  }, [search, category]);
+  }, [hydrated, search, category]);
 
   // Handle search submit
   const handleSearch = (e: React.FormEvent) => {
@@ -191,12 +195,15 @@ const ProductsPage = () => {
     router.push(`/product?${params.toString()}`);
   };
 
-  if (!hydrated) {
+  if (!hydrated || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bodyC">
         <div className="text-accentC text-xl font-bold animate-pulse">Checking authentication...</div>
       </div>
     );
+  }
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (
@@ -326,9 +333,9 @@ const ProductsPage = () => {
               <button
                 type="submit"
                 className="w-full bg-accentC text-cardC py-3 rounded-lg font-bold text-lg hover:bg-accentC/90 transition mt-2"
-                disabled={loading}
+                disabled={productsLoading}
               >
-                {loading ? 'Adding...' : 'Add Product'}
+                {productsLoading ? 'Adding...' : 'Add Product'}
               </button>
               {error && <div className="text-red-600 font-semibold text-center">{error}</div>}
               {Object.keys(fieldErrors).length > 0 && (
@@ -376,7 +383,7 @@ const ProductsPage = () => {
           </form>
           {/* Product list UI */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {loading ? (
+            {productsLoading ? (
               <div className="col-span-2 text-center text-accentC font-bold animate-pulse">Loading products...</div>
             ) : error ? (
               <div className="col-span-2 text-center text-red-600 font-bold">{error}</div>

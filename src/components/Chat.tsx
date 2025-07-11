@@ -113,8 +113,8 @@ export default function Chat({ productId, sellerUsername }: ChatProps) {
   };
 
   return (
-    <div className="flex flex-col h-[400px] max-h-[60vh] w-full bg-white dark:bg-zinc-900 rounded-2xl shadow border border-muted/10">
-      <div className="px-4 py-3 border-b border-muted/10 bg-accentC/10 dark:bg-zinc-800 rounded-t-2xl">
+    <div className="flex flex-col h-[400px] max-h-[60vh] w-full bg-cardC rounded-2xl shadow border border-muted/10">
+      <div className="px-4 py-3 border-b border-muted/10 bg-accentC/10 rounded-t-2xl">
         <span className="font-bold text-lg text-heading">Product Chat</span>
       </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -132,7 +132,7 @@ export default function Chat({ productId, sellerUsername }: ChatProps) {
             >
               <div className={`px-4 py-2 rounded-xl max-w-[70%] break-words shadow text-sm ${msg.sender === user?.username
                 ? 'bg-accentC text-white'
-                : 'bg-muted/20 dark:bg-zinc-800 text-heading'}`}
+                : 'bg-muted/20 text-heading'}`}
               >
                 <span className="block font-semibold mb-1 text-xs text-muted">
                   {msg.sender === user?.username ? 'You' : msg.sender}
@@ -147,10 +147,10 @@ export default function Chat({ productId, sellerUsername }: ChatProps) {
         )}
         <div ref={messagesEndRef} />
       </div>
-      <div className="p-3 border-t border-muted/10 bg-white dark:bg-zinc-900 rounded-b-2xl flex gap-2">
+      <div className="p-3 border-t border-muted/10 bg-cardC rounded-b-2xl flex gap-2">
         <input
           type="text"
-          className="flex-1 rounded-lg border border-muted/20 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accentC bg-white dark:bg-zinc-800 text-heading"
+          className="flex-1 rounded-lg border border-muted/20 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accentC bg-cardC text-heading"
           placeholder="Type a message..."
           value={input}
           onChange={e => setInput(e.target.value)}

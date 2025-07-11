@@ -7,10 +7,11 @@
 :root {
   --color-bg: #f7f6f1; /* Soft off-white */
   --color-bg-secondary: #ffe0b3; /* Light peach */
-  --color-heading: #4f2f17; /* Deep brown */
-  --color-text: #3a2c21; /* Darker brown */
-  --color-muted: #b79a7b; /* Muted beige */
-  --color-accent: #f4a261; /* Warm orange */
+  --color-heading: #3a2c21; /* Deeper brown for better contrast */
+  --color-text: #2a1a0e; /* Even darker brown */
+  --color-muted: #8d6748; /* More saturated muted */
+  --color-accent: #f2994a; /* Stronger orange */
+  --color-card: #f5ede6; /* Soft, warm card background */
   --color-loqta: #e76f51; /* Rich red-orange */
 
   --color-slider_1_From: #4f3c1c;
@@ -22,47 +23,41 @@
 }
 
 [data-theme="dark"] {
-  --color-body: #2d2b28; /* Dark charcoal */
-  --color-card: #3e3b36; /* Dark brown */
-  --color-footer: #3d2a1d; /* Dark coffee brown */
-  --color-accent: #f59e0b; /* Golden yellow */
-  --color-listbg: #4e3b31; /* Rich brown */
-  --color-bg-secondary: #634a3e; /* Dark taupe */
-  --color-heading: #f5e3cc; /* Light cream */
-  --color-text: #e0cda9; /* Soft beige */
-  --color-muted: #9e806b; /* Muted brown */
-  --color-loqta: #e57228; /* Bright orange */
-  --color-footer-text: #f5f5f5; /* Light grey */
-
-  /* Slider Colors for Dark Theme */
+  --color-body: #181818;
+  --color-card: #23272e; /* True dark card */
+  --color-footer: #23272e;
+  --color-accent: #f59e0b;
+  --color-listbg: #23272e;
+  --color-bg-secondary: #23272e;
+  --color-heading: #f5e3cc;
+  --color-text: #f3f3f3;
+  --color-muted: #bfa97a; /* Lighter muted for dark bg */
+  --color-loqta: #e57228;
+  --color-footer-text: #f5f5f5;
+  --color-text-on-slider: #f3f3f3;
   --color-slider_1_From: #2a1f16;
   --color-slider_1_to: #3a2a20;
   --color-slider_2_From: #2e1d1d;
   --color-slider_2_to: #463030;
   --color-slider_3_From: #1c2b26;
   --color-slider_3_to: #2d3f37;
-
-  --color-text-on-slider: #f3f3f3;
 }
 
 [data-theme="light"] {
-  --color-body: #ffffff; /* Pure white */
-  --color-card: #ffffff; /* White */
-  --color-footer: #8e4b3a; /* Warm brown */
-  --color-accent: #f59e0b; /* Golden yellow */
-  --color-listbg: #faf3e0; /* Soft cream */
-  --color-bg-secondary: #fff4d6; /* Light golden */
-  --color-heading: #7c3a1d; /* Rich brown */
-  --color-text: #5c4033; /* Dark brown */
-  --color-muted: #b58c77; /* Muted beige */
-  --color-loqta: #d2691e; /* Chocolate brown */
-  --color-footer-text: #ffffff; /* White */
-  --color-button-bg: #d2691e; /* Rich brown */
-  --color-button-text: #8b4513; /* Dark brown */
-
+  --color-body: #f7f6f1;
+  --color-card: #fffdfa; /* Slightly off-white for cards */
+  --color-footer: #8e4b3a;
+  --color-accent: #f59e0b;
+  --color-listbg: #faf3e0;
+  --color-bg-secondary: #fff4d6;
+  --color-heading: #3a2c21;
+  --color-text: #2a1a0e;
+  --color-muted: #8d6748;
+  --color-loqta: #d2691e;
+  --color-footer-text: #ffffff;
+  --color-button-bg: #d2691e;
+  --color-button-text: #8b4513;
   --color-text-on-slider: #eaeaea;
-
-  /* Slider Colors for Light Theme */
   --color-slider_1_From: #33291a;
   --color-slider_1_to: #4a3a24;
   --color-slider_2_From: #3f2929;
@@ -72,21 +67,18 @@
 }
 
 [data-theme="autumn"] {
-  --color-body: #f4e1c1; /* Soft cream */
-  --color-card: #f9f0e2; /* Light beige */
-  --color-footer: #8a4f2f; /* Dark brown */
-  --color-accent: #e08e3c; /* Warm amber */
-  --color-listbg: #f7dfc5; /* Light yellowish */
-  --color-bg-secondary: #ffc078; /* Soft orange */
-  --color-heading: #6b2e0b; /* Dark brown */
-  --color-text: #5c4033; /* Dark brown */
-  --color-muted: #b08977; /* Muted brown */
-  --color-loqta: #b85c2d; /* Copper brown */
-  --color-footer-text: #fffaf2; /* Light cream */
-
+  --color-body: #f4e1c1;
+  --color-card: #f6e3c5; /* More contrast for card */
+  --color-footer: #8a4f2f;
+  --color-accent: #e08e3c;
+  --color-listbg: #f7dfc5;
+  --color-bg-secondary: #ffc078;
+  --color-heading: #6b2e0b;
+  --color-text: #3a2c21;
+  --color-muted: #b08977;
+  --color-loqta: #b85c2d;
+  --color-footer-text: #fffaf2;
   --color-text-on-slider: #f5e8da;
-
-  /* Slider Colors for Autumn Theme */
   --color-slider_1_From: #3a2d1d;
   --color-slider_1_to: #5b4225;
   --color-slider_2_From: #4b2f1d;
@@ -96,27 +88,39 @@
 }
 
 [data-theme="calm"] {
-  --color-body: #e9f7ef; /* Soft mint green */
-  --color-card: #ffffff; /* Pure white */
-  --color-footer: #7c5e3c; /* Warm brown */
-  --color-accent: #f4a300; /* Golden yellow */
-  --color-listbg: #f7edc7; /* Light beige */
-  --color-bg-secondary: #e0a96d; /* Warm beige */
-  --color-heading: #4a2c1d; /* Rich brown */
-  --color-text: #3f2a1d; /* Dark brown */
-  --color-muted: #b7956c; /* Soft brown */
-  --color-loqta: #c97c3c; /* Warm amber */
-  --color-footer-text: #f5f5f5; /* Light grey */
-
+  --color-body: #e9f7ef;
+  --color-card: #e3f0ea; /* Soft mint card for contrast */
+  --color-footer: #7c5e3c;
+  --color-accent: #38bdf8; /* Brighter blue accent */
+  --color-listbg: #f7edc7;
+  --color-bg-secondary: #e0a96d;
+  --color-heading: #205375; /* Deep blue for heading */
+  --color-text: #183153; /* Dark blue for text */
+  --color-muted: #6c8ea0; /* Muted blue-gray */
+  --color-loqta: #c97c3c;
+  --color-footer-text: #f5f5f5;
   --color-text-on-slider: #f0f2ec;
-
-  /* Slider Colors for Calm Theme */
   --color-slider_1_From: #2d2a1f;
   --color-slider_1_to: #3f3925;
   --color-slider_2_From: #3c3226;
   --color-slider_2_to: #564830;
   --color-slider_3_From: #333126;
   --color-slider_3_to: #4b442d;
+}
+
+[data-theme="bazaar"] {
+  --color-body: #f5f3ff;
+  --color-card: #ede9fe; /* Soft lavender card */
+  --color-footer: #6d28d9;
+  --color-accent: #a21caf; /* Vibrant purple */
+  --color-listbg: #f3e8ff;
+  --color-bg-secondary: #e9d5ff;
+  --color-heading: #4b006e; /* Deep purple */
+  --color-text: #2d133b; /* Dark purple */
+  --color-muted: #7c3aed; /* Muted purple */
+  --color-loqta: #a21caf;
+  --color-footer-text: #fff;
+  --color-text-on-slider: #ede9fe;
 }
 
 /* Apply background color to body */
