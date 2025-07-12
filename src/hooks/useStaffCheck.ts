@@ -1,25 +1,31 @@
-import { useEffect, useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import axios from '@/lib/axios';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/store';
+import { fetchStaffStatus, resetStaffStatus } from '@/features/auth/authSlice';
 
 export function useStaffCheck() {
-  const { accessToken, hydrated, isAuthenticated } = useAuth();
-  const [isStaff, setIsStaff] = useState<boolean | undefined>(undefined);
+  const dispatch = useDispatch();
+  const { isAuthenticated, hydrated, isStaff, isStaffLoading } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    if (hydrated && isAuthenticated && accessToken) {
-      setIsStaff(undefined); // loading
-      axios.get('/auth/staff-check/', {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      })
-        .then(res => {
-          setIsStaff(res.status === 200);
-        })
-        .catch(() => setIsStaff(false));
-    } else {
-      setIsStaff(false);
+    // Only fetch if authenticated, hydrated, staff status is undefined, and not currently loading
+    if (isAuthenticated && hydrated && isStaff === undefined && !isStaffLoading) {
+      console.log('useStaffCheck: Fetching staff status...', { isAuthenticated, hydrated, isStaff, isStaffLoading });
+      dispatch(fetchStaffStatus() as any);
     }
-  }, [hydrated, isAuthenticated, accessToken]);
+  }, [isAuthenticated, hydrated, isStaff, dispatch]); // Removed isStaffLoading from dependencies
 
-  return isStaff;
+  const refreshStaffStatus = () => {
+    console.log('useStaffCheck: Forcing staff status refresh...');
+    dispatch(resetStaffStatus());
+    dispatch(fetchStaffStatus() as any);
+  };
+
+  return {
+    isStaff,
+    isStaffLoading,
+    isAuthenticated,
+    hydrated,
+    refreshStaffStatus
+  };
 } 

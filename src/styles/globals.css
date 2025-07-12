@@ -3,132 +3,291 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Root Color Variables */
+/* Enhanced Root Color Variables with Better UX */
 :root {
-  --color-bg: #f7f6f1; /* Soft off-white */
-  --color-bg-secondary: #ffe0b3; /* Light peach */
-  --color-heading: #3a2c21; /* Deeper brown for better contrast */
-  --color-text: #2a1a0e; /* Even darker brown */
-  --color-muted: #8d6748; /* More saturated muted */
-  --color-accent: #f2994a; /* Stronger orange */
-  --color-card: #f5ede6; /* Soft, warm card background */
-  --color-loqta: #e76f51; /* Rich red-orange */
-
-  --color-slider_1_From: #4f3c1c;
-  --color-slider_1_to: #6b4e23;
-  --color-slider_2_From: #4a2e30;
-  --color-slider_2_to: #703b44;
-  --color-slider_3_From: #2a3d35;
-  --color-slider_3_to: #406852;
+  /* Base Colors - Neutral Foundation */
+  --color-bg: #fafafa;
+  --color-bg-secondary: #f5f5f5;
+  --color-card: #ffffff;
+  --color-card-hover: #f8f9fa;
+  --color-border: #e5e7eb;
+  --color-border-focus: #3b82f6;
+  
+  /* Typography - High Contrast for Accessibility */
+  --color-heading: #111827;
+  --color-text: #374151;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #9ca3af;
+  --color-text-inverse: #ffffff;
+  
+  /* Accent Colors - Vibrant but Accessible */
+  --color-accent: #3b82f6;
+  --color-accent-hover: #2563eb;
+  --color-accent-light: #dbeafe;
+  --color-accent-dark: #1e40af;
+  
+  /* Status Colors */
+  --color-success: #10b981;
+  --color-success-light: #d1fae5;
+  --color-warning: #f59e0b;
+  --color-warning-light: #fef3c7;
+  --color-error: #ef4444;
+  --color-error-light: #fee2e2;
+  
+  /* Brand Colors */
+  --color-loqta: #dc2626;
+  --color-loqta-light: #fecaca;
+  --color-loqta-dark: #991b1b;
+  
+  /* Interactive Elements */
+  --color-button-primary: #3b82f6;
+  --color-button-primary-hover: #2563eb;
+  --color-button-secondary: #f3f4f6;
+  --color-button-secondary-hover: #e5e7eb;
+  --color-button-text: #ffffff;
+  --color-button-text-secondary: #374151;
+  
+  /* Shadows and Depth */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
+/* Dark Theme - Sophisticated Dark Palette */
 [data-theme="dark"] {
-  --color-body: #181818;
-  --color-card: #23272e; /* True dark card */
-  --color-footer: #23272e;
-  --color-accent: #f59e0b;
-  --color-listbg: #23272e;
-  --color-bg-secondary: #23272e;
-  --color-heading: #f5e3cc;
-  --color-text: #f3f3f3;
-  --color-muted: #bfa97a; /* Lighter muted for dark bg */
-  --color-loqta: #e57228;
-  --color-footer-text: #f5f5f5;
-  --color-text-on-slider: #f3f3f3;
-  --color-slider_1_From: #2a1f16;
-  --color-slider_1_to: #3a2a20;
-  --color-slider_2_From: #2e1d1d;
-  --color-slider_2_to: #463030;
-  --color-slider_3_From: #1c2b26;
-  --color-slider_3_to: #2d3f37;
+  --color-bg: #0f172a;
+  --color-bg-secondary: #1e293b;
+  --color-card: #1e293b;
+  --color-card-hover: #334155;
+  --color-border: #334155;
+  --color-border-focus: #60a5fa;
+  
+  /* Typography - High Contrast on Dark */
+  --color-heading: #f8fafc;
+  --color-text: #e2e8f0;
+  --color-text-secondary: #cbd5e1;
+  --color-text-muted: #94a3b8;
+  --color-text-inverse: #0f172a;
+  
+  /* Accent Colors - Brighter for Dark Background */
+  --color-accent: #60a5fa;
+  --color-accent-hover: #3b82f6;
+  --color-accent-light: #1e3a8a;
+  --color-accent-dark: #93c5fd;
+  
+  /* Status Colors - Adjusted for Dark */
+  --color-success: #34d399;
+  --color-success-light: #065f46;
+  --color-warning: #fbbf24;
+  --color-warning-light: #92400e;
+  --color-error: #f87171;
+  --color-error-light: #7f1d1d;
+  
+  /* Brand Colors */
+  --color-loqta: #f87171;
+  --color-loqta-light: #7f1d1d;
+  --color-loqta-dark: #fecaca;
+  
+  /* Interactive Elements */
+  --color-button-primary: #60a5fa;
+  --color-button-primary-hover: #3b82f6;
+  --color-button-secondary: #334155;
+  --color-button-secondary-hover: #475569;
+  --color-button-text: #0f172a;
+  --color-button-text-secondary: #e2e8f0;
+  
+  /* Enhanced Shadows for Dark */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
 }
 
+/* Light Theme - Clean and Modern */
 [data-theme="light"] {
-  --color-body: #f7f6f1;
-  --color-card: #fffdfa; /* Slightly off-white for cards */
-  --color-footer: #8e4b3a;
-  --color-accent: #f59e0b;
-  --color-listbg: #faf3e0;
-  --color-bg-secondary: #fff4d6;
-  --color-heading: #3a2c21;
-  --color-text: #2a1a0e;
-  --color-muted: #8d6748;
-  --color-loqta: #d2691e;
-  --color-footer-text: #ffffff;
-  --color-button-bg: #d2691e;
-  --color-button-text: #8b4513;
-  --color-text-on-slider: #eaeaea;
-  --color-slider_1_From: #33291a;
-  --color-slider_1_to: #4a3a24;
-  --color-slider_2_From: #3f2929;
-  --color-slider_2_to: #5c3e3e;
-  --color-slider_3_From: #2d3027;
-  --color-slider_3_to: #434d37;
+  --color-bg: #ffffff;
+  --color-bg-secondary: #f8fafc;
+  --color-card: #ffffff;
+  --color-card-hover: #f1f5f9;
+  --color-border: #e2e8f0;
+  --color-border-focus: #3b82f6;
+  
+  /* Typography */
+  --color-heading: #0f172a;
+  --color-text: #334155;
+  --color-text-secondary: #64748b;
+  --color-text-muted: #94a3b8;
+  --color-text-inverse: #ffffff;
+  
+  /* Accent Colors */
+  --color-accent: #3b82f6;
+  --color-accent-hover: #2563eb;
+  --color-accent-light: #dbeafe;
+  --color-accent-dark: #1e40af;
+  
+  /* Status Colors */
+  --color-success: #10b981;
+  --color-success-light: #d1fae5;
+  --color-warning: #f59e0b;
+  --color-warning-light: #fef3c7;
+  --color-error: #ef4444;
+  --color-error-light: #fee2e2;
+  
+  /* Brand Colors */
+  --color-loqta: #dc2626;
+  --color-loqta-light: #fecaca;
+  --color-loqta-dark: #991b1b;
+  
+  /* Interactive Elements */
+  --color-button-primary: #3b82f6;
+  --color-button-primary-hover: #2563eb;
+  --color-button-secondary: #f1f5f9;
+  --color-button-secondary-hover: #e2e8f0;
+  --color-button-text: #ffffff;
+  --color-button-text-secondary: #334155;
 }
 
+/* Autumn Theme - Warm and Cozy */
 [data-theme="autumn"] {
-  --color-body: #f4e1c1;
-  --color-card: #f6e3c5; /* More contrast for card */
-  --color-footer: #8a4f2f;
-  --color-accent: #e08e3c;
-  --color-listbg: #f7dfc5;
-  --color-bg-secondary: #ffc078;
-  --color-heading: #6b2e0b;
-  --color-text: #3a2c21;
-  --color-muted: #b08977;
-  --color-loqta: #b85c2d;
-  --color-footer-text: #fffaf2;
-  --color-text-on-slider: #f5e8da;
-  --color-slider_1_From: #3a2d1d;
-  --color-slider_1_to: #5b4225;
-  --color-slider_2_From: #4b2f1d;
-  --color-slider_2_to: #6b3f2c;
-  --color-slider_3_From: #3f3021;
-  --color-slider_3_to: #5c4028;
+  --color-bg: #fef7ed;
+  --color-bg-secondary: #fed7aa;
+  --color-card: #ffffff;
+  --color-card-hover: #fef3c7;
+  --color-border: #fbbf24;
+  --color-border-focus: #d97706;
+  
+  /* Typography - Warm Browns */
+  --color-heading: #451a03;
+  --color-text: #92400e;
+  --color-text-secondary: #b45309;
+  --color-text-muted: #d97706;
+  --color-text-inverse: #ffffff;
+  
+  /* Accent Colors - Autumn Palette */
+  --color-accent: #ea580c;
+  --color-accent-hover: #dc2626;
+  --color-accent-light: #fed7aa;
+  --color-accent-dark: #9a3412;
+  
+  /* Status Colors - Autumn Tones */
+  --color-success: #16a34a;
+  --color-success-light: #dcfce7;
+  --color-warning: #f59e0b;
+  --color-warning-light: #fef3c7;
+  --color-error: #dc2626;
+  --color-error-light: #fee2e2;
+  
+  /* Brand Colors */
+  --color-loqta: #ea580c;
+  --color-loqta-light: #fed7aa;
+  --color-loqta-dark: #9a3412;
+  
+  /* Interactive Elements */
+  --color-button-primary: #ea580c;
+  --color-button-primary-hover: #dc2626;
+  --color-button-secondary: #fed7aa;
+  --color-button-secondary-hover: #fbbf24;
+  --color-button-text: #ffffff;
+  --color-button-text-secondary: #92400e;
 }
 
+/* Calm Theme - Serene and Peaceful */
 [data-theme="calm"] {
-  --color-body: #e9f7ef;
-  --color-card: #e3f0ea; /* Soft mint card for contrast */
-  --color-footer: #7c5e3c;
-  --color-accent: #38bdf8; /* Brighter blue accent */
-  --color-listbg: #f7edc7;
-  --color-bg-secondary: #e0a96d;
-  --color-heading: #205375; /* Deep blue for heading */
-  --color-text: #183153; /* Dark blue for text */
-  --color-muted: #6c8ea0; /* Muted blue-gray */
-  --color-loqta: #c97c3c;
-  --color-footer-text: #f5f5f5;
-  --color-text-on-slider: #f0f2ec;
-  --color-slider_1_From: #2d2a1f;
-  --color-slider_1_to: #3f3925;
-  --color-slider_2_From: #3c3226;
-  --color-slider_2_to: #564830;
-  --color-slider_3_From: #333126;
-  --color-slider_3_to: #4b442d;
+  --color-bg: #f0f9ff;
+  --color-bg-secondary: #e0f2fe;
+  --color-card: #ffffff;
+  --color-card-hover: #f8fafc;
+  --color-border: #7dd3fc;
+  --color-border-focus: #0ea5e9;
+  
+  /* Typography - Cool Blues */
+  --color-heading: #0c4a6e;
+  --color-text: #0369a1;
+  --color-text-secondary: #0284c7;
+  --color-text-muted: #38bdf8;
+  --color-text-inverse: #ffffff;
+  
+  /* Accent Colors - Calm Blues */
+  --color-accent: #0ea5e9;
+  --color-accent-hover: #0284c7;
+  --color-accent-light: #e0f2fe;
+  --color-accent-dark: #0369a1;
+  
+  /* Status Colors - Calm Palette */
+  --color-success: #059669;
+  --color-success-light: #d1fae5;
+  --color-warning: #d97706;
+  --color-warning-light: #fef3c7;
+  --color-error: #dc2626;
+  --color-error-light: #fee2e2;
+  
+  /* Brand Colors */
+  --color-loqta: #0ea5e9;
+  --color-loqta-light: #e0f2fe;
+  --color-loqta-dark: #0369a1;
+  
+  /* Interactive Elements */
+  --color-button-primary: #0ea5e9;
+  --color-button-primary-hover: #0284c7;
+  --color-button-secondary: #e0f2fe;
+  --color-button-secondary-hover: #7dd3fc;
+  --color-button-text: #ffffff;
+  --color-button-text-secondary: #0369a1;
 }
 
+/* Bazaar Theme - Vibrant and Energetic */
 [data-theme="bazaar"] {
-  --color-body: #f5f3ff;
-  --color-card: #ede9fe; /* Soft lavender card */
-  --color-footer: #6d28d9;
-  --color-accent: #a21caf; /* Vibrant purple */
-  --color-listbg: #f3e8ff;
-  --color-bg-secondary: #e9d5ff;
-  --color-heading: #4b006e; /* Deep purple */
-  --color-text: #2d133b; /* Dark purple */
-  --color-muted: #7c3aed; /* Muted purple */
-  --color-loqta: #a21caf;
-  --color-footer-text: #fff;
-  --color-text-on-slider: #ede9fe;
+  --color-bg: #faf5ff;
+  --color-bg-secondary: #f3e8ff;
+  --color-card: #ffffff;
+  --color-card-hover: #f8fafc;
+  --color-border: #c084fc;
+  --color-border-focus: #a855f7;
+  
+  /* Typography - Rich Purples */
+  --color-heading: #581c87;
+  --color-text: #7c3aed;
+  --color-text-secondary: #a855f7;
+  --color-text-muted: #c084fc;
+  --color-text-inverse: #ffffff;
+  
+  /* Accent Colors - Vibrant Purples */
+  --color-accent: #a855f7;
+  --color-accent-hover: #9333ea;
+  --color-accent-light: #f3e8ff;
+  --color-accent-dark: #7c3aed;
+  
+  /* Status Colors - Bazaar Palette */
+  --color-success: #059669;
+  --color-success-light: #d1fae5;
+  --color-warning: #d97706;
+  --color-warning-light: #fef3c7;
+  --color-error: #dc2626;
+  --color-error-light: #fee2e2;
+  
+  /* Brand Colors */
+  --color-loqta: #a855f7;
+  --color-loqta-light: #f3e8ff;
+  --color-loqta-dark: #7c3aed;
+  
+  /* Interactive Elements */
+  --color-button-primary: #a855f7;
+  --color-button-primary-hover: #9333ea;
+  --color-button-secondary: #f3e8ff;
+  --color-button-secondary-hover: #e9d5ff;
+  --color-button-text: #ffffff;
+  --color-button-text-secondary: #581c87;
 }
 
 /* Apply background color to body */
 body {
-  background-color: var(--color-body);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* globals.css */
+/* Enhanced Scrollbar Styling */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
@@ -137,6 +296,27 @@ body {
   scrollbar-width: none;
 }
 
+/* Custom Scrollbar for Better UX */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-accent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-hover);
+}
+
+/* Font Import */
 @import "@fontsource/cairo/index.css";
 
 html {
@@ -148,28 +328,99 @@ html[dir="rtl"] {
   font-family: 'Cairo', system-ui, sans-serif;
 }
 
-body {
-  background: theme('colors.bazaar.light');
-  color: theme('colors.bazaar.accent2');
+/* Enhanced Focus States for Better Accessibility */
+*:focus {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
 }
 
-body.theme-bazaar {
-  background: theme('colors.bazaar.light');
-  color: theme('colors.bazaar.accent2');
+/* Smooth Transitions for Theme Changes */
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
-body.theme-bazaar-dark {
-  background: theme('colors.bazaar.dark');
-  color: #fff;
+
+/* Enhanced Card Styling */
+.card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
 }
-body.theme-autumn {
-  background: theme('colors.autumn.light');
-  color: theme('colors.autumn.dark');
+
+.card:hover {
+  background: var(--color-card-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
-body.theme-calm {
-  background: theme('colors.calm.light');
-  color: theme('colors.calm.dark');
+
+/* Enhanced Button Styling */
+.btn-primary {
+  background: var(--color-button-primary);
+  color: var(--color-button-text);
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
 }
-body.theme-dark {
-  background: #181818;
-  color: #fff;
+
+.btn-primary:hover {
+  background: var(--color-button-primary-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--color-button-secondary);
+  color: var(--color-button-text-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: var(--color-button-secondary-hover);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Enhanced Text Styling */
+.text-heading {
+  color: var(--color-heading);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.text-body {
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+.text-accent {
+  color: var(--color-accent);
+}
+
+/* Enhanced Status Indicators */
+.status-success {
+  background: var(--color-success-light);
+  color: var(--color-success);
+  border: 1px solid var(--color-success);
+}
+
+.status-warning {
+  background: var(--color-warning-light);
+  color: var(--color-warning);
+  border: 1px solid var(--color-warning);
+}
+
+.status-error {
+  background: var(--color-error-light);
+  color: var(--color-error);
+  border: 1px solid var(--color-error);
 }

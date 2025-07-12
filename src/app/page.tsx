@@ -4,7 +4,9 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import axios from '../lib/axios';
 import NoData from '@/components/NoData';
-import { useCart } from '@/contexts/CartContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '@/store';
+import { addToCart } from '@/features/cart/cartSlice';
 import Swal from 'sweetalert2';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { XMarkIcon, FunnelIcon, TagIcon, CurrencyDollarIcon, CubeIcon, ArrowUpIcon } from '@heroicons/react/24/outline';
@@ -18,7 +20,9 @@ export default function HomePage() {
   const [products, setProducts] = useState<any[]>([]);
   const [prodLoading, setProdLoading] = useState(false);
   const [prodError, setProdError] = useState('');
-  const { addToCart, loading: cartLoading } = useCart();
+  const cart = useSelector((state: RootState) => state.cart.cart);
+  const cartLoading = useSelector((state: RootState) => state.cart.loading);
+  const dispatch = useDispatch();
   const [addingToCart, setAddingToCart] = useState<{ [key: string]: boolean }>({});
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -111,7 +115,7 @@ export default function HomePage() {
     setAddingToCart(prev => ({ ...prev, [productId]: true }));
     
     try {
-      await addToCart(productId);
+      dispatch(addToCart({ productId, quantity: 1 }));
       
       // Show success alert
       Swal.fire({
@@ -174,13 +178,15 @@ export default function HomePage() {
             </svg>
           </div>
           <div className="relative z-10 flex flex-1 flex-col items-center md:items-start justify-center w-full max-w-2xl mx-auto px-6 py-20 gap-8 text-center md:text-left">
-            <h1 className="text-4xl md:text-6xl font-extrabold leading-tight text-heading">
+            <h1 className="text-4xl md:text-6xl font-extrabold leading-tight text-zinc-900 dark:text-white drop-shadow-lg" style={{textShadow: '0 2px 8px rgba(0,0,0,0.18)'}}>
               Discover <span className="text-accentC">Your Favorites</span>
             </h1>
-            <p className="text-lg md:text-2xl text-muted max-w-xl mx-auto md:mx-0">
+            <p className="text-lg md:text-2xl text-zinc-700 dark:text-zinc-200 max-w-xl mx-auto md:mx-0 drop-shadow" style={{textShadow: '0 1px 4px rgba(0,0,0,0.12)'}}>
               Shop trending products, exclusive offers, and enjoy a seamless shopping experience with Loqta.
             </p>
-            <Link href="#featured" className="inline-block px-8 py-4 bg-accentC text-cardC rounded-xl font-bold shadow-md hover:bg-accentC/90 transition text-lg mt-2 focus:outline-none focus:ring-2 focus:ring-accentC">Shop Now</Link>
+            <Link href="#featured" className="inline-block px-8 py-4 bg-accentC text-white rounded-xl font-bold shadow-md hover:bg-accentC/90 transition text-lg mt-2 focus:outline-none focus:ring-2 focus:ring-accentC">
+              Shop Now
+            </Link>
           </div>
           <div className="relative z-10 flex-1 flex justify-center items-center w-full md:w-auto px-6 md:px-0 mt-8 md:mt-0">
             <img src="/slide1.webp" alt="Featured" className="w-64 h-64 md:w-80 md:h-80 object-cover rounded-3xl shadow-xl border-4 border-white dark:border-cardC bg-white/80" />

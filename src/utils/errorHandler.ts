@@ -142,3 +142,19 @@ export const getErrorType = (error: any): 'network' | 'auth' | 'validation' | 's
   if (isServerError(error)) return 'server';
   return 'unknown';
 }; 
+
+export function setAccessToken(token: string | null | undefined) {
+  if (token && token !== 'undefined') {
+    localStorage.setItem('accessToken', token);
+  } else {
+    localStorage.removeItem('accessToken');
+  }
+}
+
+export function setRefreshToken(token: string | null | undefined) {
+  if (token && token !== 'undefined') {
+    localStorage.setItem('refreshToken', token);
+  } else {
+    localStorage.removeItem('refreshToken');
+  }
+} 

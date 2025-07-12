@@ -1,6 +1,7 @@
-'use client';
+"use client";
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 import axios from '../../lib/axios';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
@@ -8,7 +9,10 @@ import Swal from 'sweetalert2';
 import Link from 'next/link';
 
 const ProductsPage = () => {
-  const { user, isAuthenticated, hydrated, loading } = useAuth();
+  const user = useSelector((state: RootState) => state.auth.user);
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const hydrated = useSelector((state: RootState) => state.auth.hydrated);
+  const loading = useSelector((state: RootState) => state.auth.loading);
   const router = useRouter();
   const searchParams = useSearchParams();
   // Debug log for auth state at render (match profile page)
@@ -59,11 +63,10 @@ const ProductsPage = () => {
   }, [hydrated, searchParams]);
 
   useEffect(() => {
-    if (!hydrated || loading) return;
-    if (!isAuthenticated) {
+    if (hydrated && !isAuthenticated) {
       router.replace('/login');
     }
-  }, [hydrated, loading, isAuthenticated, router]);
+  }, [hydrated, isAuthenticated, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });

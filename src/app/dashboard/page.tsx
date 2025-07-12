@@ -4,7 +4,10 @@ import React, { useEffect, useState, useRef } from "react";
 import api from "@/lib/axios";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '@/store';
+import { logout } from '@/features/auth/authSlice';
+import { useStaffCheck } from '@/hooks/useStaffCheck';
 import { UserCircleIcon, PlusIcon, ChartBarIcon, ShoppingBagIcon, UsersIcon, CubeIcon, BellIcon } from '@heroicons/react/24/outline';
 import Header from '@/components/Header';
 import NoData from '@/components/NoData';
@@ -26,11 +29,17 @@ const mockStats = [
 
 const DashboardPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [productsLoading, setProductsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { accessToken, logout, user, loading: authLoading, isAuthenticated, hydrated } = useAuth();
+  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
+  const logoutFn = () => dispatch(logout() as any);
+  const user = useSelector((state: RootState) => state.auth.user);
+  const loading = useSelector((state: RootState) => state.auth.loading);
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const hydrated = useSelector((state: RootState) => state.auth.hydrated);
+  const dispatch = useDispatch();
   const router = useRouter();
-  const [isStaff, setIsStaff] = useState(false);
+  const { isStaff, isStaffLoading } = useStaffCheck();
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [categoryName, setCategoryName] = useState("");
   const [categoryLoading, setCategoryLoading] = useState(false);
@@ -46,7 +55,7 @@ const DashboardPage = () => {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      setLoading(true);
+      setProductsLoading(true);
       setError(null);
       try {
         const res = await api.get("/api/v1/products/");
@@ -60,36 +69,13 @@ const DashboardPage = () => {
       } catch (err: any) {
         setError(err?.message || "Failed to load products");
       } finally {
-        setLoading(false);
+        setProductsLoading(false);
       }
     };
     fetchProducts();
   }, []);
 
-  useEffect(() => {
-    if (hydrated && isAuthenticated && accessToken) {
-      console.log('Requesting staff status with token:', accessToken);
-      api.get("/auth/staff-check/", {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      })
-        .then(res => {
-          console.log('Staff check response:', res);
-          if (res.status === 200) {
-            setIsStaff(true);
-          } else {
-            setIsStaff(false);
-          }
-        })
-        .catch(err => {
-          if (err?.response?.status === 401) {
-            setIsStaff(false);
-          } else {
-            setIsStaff(false);
-          }
-          console.log('Staff check error:', err);
-        });
-    }
-  }, [hydrated, isAuthenticated, accessToken]);
+
 
   // Close modal on outside click or Escape
   useEffect(() => {
@@ -121,7 +107,7 @@ const DashboardPage = () => {
   return (
     <div className="min-h-screen bg-bodyC pt-24">
       <Header />
-      {isStaff && (
+      {isStaff === true && (
         <div className="max-w-7xl mx-auto mt-4 mb-6 flex flex-col items-center">
           <div className="flex items-center justify-center mb-2">
             <span className="bg-yellow-200 text-yellow-900 font-bold px-4 py-2 rounded-full shadow border border-yellow-300 flex items-center gap-2">
@@ -239,7 +225,7 @@ const DashboardPage = () => {
               <h2 className="text-lg font-bold text-heading">Top Products</h2>
             </div>
             <div className="flex flex-col gap-4">
-              {loading ? (
+              {productsLoading ? (
                 <div className="text-center text-muted py-8">Loading...</div>
               ) : error ? (
                 <NoData message={error} />
@@ -266,7 +252,7 @@ const DashboardPage = () => {
               <button className="px-3 py-1 bg-accentC text-cardC rounded-full font-bold flex items-center gap-1 text-sm hover:bg-accentC/80 transition"><CubeIcon className="h-4 w-4" />Manage</button>
             </div>
             <ul className="flex flex-col gap-2">
-              {loading ? (
+              {productsLoading ? (
                 <div className="text-center text-muted py-8">Loading...</div>
               ) : error ? (
                 <NoData message={error} />

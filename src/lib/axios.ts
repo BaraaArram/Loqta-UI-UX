@@ -1,5 +1,7 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { config } from '../config/env';
+import store from '@/store';
+import { refreshAccessToken } from '../features/auth/authSlice';
 
 // Create axios instance
 const api = axios.create({
@@ -29,8 +31,8 @@ export const setAuthContext = (context: {
 // Request interceptor for adding auth token
 api.interceptors.request.use(
   (config) => {
-    // Use authContext token first, then fall back to localStorage
-    const accessToken = authContext?.token || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
+    // Use authContext token first, then fall back to localStorage (correct key: 'accessToken')
+    const accessToken = authContext?.token || (typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null);
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     } else {
@@ -45,36 +47,41 @@ api.interceptors.request.use(
 
 // Response interceptor for handling errors and token refresh
 api.interceptors.response.use(
-  (response: AxiosResponse) => {
-    return response;
-  },
+  (response: AxiosResponse) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as any;
 
-    // If the error is 401 and we haven't already tried to refresh the token
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
+    // Only try refresh if we have a refresh token
+    const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
 
+    if (error.response?.status === 401 && !originalRequest._retry && refreshToken) {
+      originalRequest._retry = true;
       try {
-        // Try to refresh the token using auth context
-        if (authContext?.refreshTokenFn) {
-          await authContext.refreshTokenFn();
-          
-          // Get the new access token
-          const newAccessToken = authContext?.token || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
-          if (newAccessToken) {
-            // Retry the original request with the new token
-            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-            return api(originalRequest);
-          }
+        const result = await store.dispatch<any>(refreshAccessToken());
+        const newAccessToken = result.payload;
+        if (newAccessToken) {
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          return api(originalRequest);
         }
       } catch (refreshError) {
-        // If refresh fails, logout the user
-        if (authContext?.logout) {
-          await authContext.logout();
+        // If refresh fails, clear tokens and redirect to login
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          window.location.href = '/login'; // Optional: force redirect
         }
         return Promise.reject(refreshError);
       }
+    }
+
+    // If no refresh token or refresh fails, clear tokens and do not retry
+    if (error.response?.status === 401 && !refreshToken) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/login';
+      }
+      return Promise.reject(error);
     }
 
     // Transform error messages for better UX

@@ -3,11 +3,12 @@
 import React, { useEffect, useState } from 'react';
 import api from '@/lib/axios';
 import Header from '@/components/Header';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '@/store';
 import { useRouter, usePathname } from 'next/navigation';
-import { useStaffCheck } from '@/hooks/useStaffCheck';
 import NoData from '@/components/NoData';
 import { PencilSquareIcon, TrashIcon, TagIcon } from '@heroicons/react/24/outline';
+import { useStaffCheck } from '@/hooks/useStaffCheck';
 
 interface Category {
   slug: string;
@@ -15,10 +16,15 @@ interface Category {
 }
 
 const CategoriesPage = () => {
-  const { user, isAuthenticated, hydrated, loading } = useAuth();
+  const user = useSelector((state: RootState) => state.auth.user);
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const hydrated = true; // You may need to handle hydration logic if needed
+  const loading = useSelector((state: RootState) => state.auth.loading);
+  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
   const router = useRouter();
   const pathname = usePathname();
-  const isStaff = useStaffCheck();
+  const { isStaff, isStaffLoading } = useStaffCheck();
+  const dispatch = useDispatch();
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
@@ -40,6 +46,8 @@ const CategoriesPage = () => {
   useEffect(() => {
     fetchCategories();
   }, [pathname]);
+
+
 
   const fetchCategories = async () => {
     setCategoriesLoading(true);

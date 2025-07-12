@@ -1,5 +1,8 @@
+"use client";
+
 import React, { useEffect, useRef, useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 import { config } from '@/config/env';
 
 interface ChatMessage {
@@ -11,7 +14,8 @@ interface ChatMessage {
 
 interface ChatProps {
   productId: string;
-  sellerUsername?: string; // Optionally pass seller username if available
+  sellerUsername?: string;
+  onClose: () => void; // Add this prop
 }
 
 const WS_BASE = typeof window !== 'undefined' && window.location.protocol === 'https:'
@@ -29,14 +33,17 @@ function getBackendHostAndPort() {
   }
 }
 
-export default function Chat({ productId, sellerUsername }: ChatProps) {
-  const { user, isAuthenticated } = useAuth();
+export default function Chat({ productId, sellerUsername, onClose }: ChatProps) {
+  const user = useSelector((state: RootState) => state.auth.user);
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const wsRef = useRef<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  // Remove open state
+  const [minimized, setMinimized] = useState(false);
 
   // Scroll to bottom on new message
   useEffect(() => {
@@ -113,58 +120,151 @@ export default function Chat({ productId, sellerUsername }: ChatProps) {
   };
 
   return (
-    <div className="flex flex-col h-[400px] max-h-[60vh] w-full bg-cardC rounded-2xl shadow border border-muted/10">
-      <div className="px-4 py-3 border-b border-muted/10 bg-accentC/10 rounded-t-2xl">
-        <span className="font-bold text-lg text-heading">Product Chat</span>
+    <div
+      className={
+        `loqta-chat fixed z-50 bottom-4 right-4 w-full max-w-sm md:max-w-md lg:max-w-lg ` +
+        `shadow-2xl rounded-2xl border flex flex-col ` +
+        `transition-all duration-300 ${minimized ? 'h-14 overflow-hidden' : 'h-[420px] max-h-[80vh]'}`
+      }
+      style={{
+        boxShadow: '0 8px 32px 0 rgba(31,38,135,0.18)',
+        background: 'var(--color-card)',
+        borderColor: 'var(--color-muted)'
+      }}
+    >
+      {/* Header */}
+      <div
+        className="flex items-center justify-between px-4 py-2 border-b rounded-t-2xl"
+        style={{
+          background: 'var(--color-accent)',
+          borderColor: 'var(--color-muted)'
+        }}
+      >
+        <div className="flex items-center gap-2">
+          <span
+            className="inline-block w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg"
+            style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-accent)' }}
+          >
+            💬
+          </span>
+          <span className="font-bold text-base" style={{ color: 'var(--color-card)' }}>Product Chat</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            className="text-xl px-1"
+            style={{ color: 'var(--color-card)', opacity: 0.8 }}
+            title={minimized ? 'Expand' : 'Minimize'}
+            onClick={() => setMinimized(m => !m)}
+          >
+            {minimized ? (
+              <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M5 12h14" /></svg>
+            ) : (
+              <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" /></svg>
+            )}
+          </button>
+          <button
+            className="text-xl px-1"
+            style={{ color: 'var(--color-card)', opacity: 0.8 }}
+            title="Close"
+            onClick={onClose}
+          >
+            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
       </div>
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {loading ? (
-          <div className="text-center text-muted">Loading chat...</div>
-        ) : error ? (
-          <div className="text-center text-red-500">{error}</div>
-        ) : messages.length === 0 ? (
-          <div className="text-center text-muted">No messages yet.</div>
-        ) : (
-          messages.map((msg, idx) => (
-            <div
-              key={idx + msg.datetime}
-              className={`flex flex-col ${msg.sender === user?.username ? 'items-end' : 'items-start'}`}
+      {/* Messages */}
+      {!minimized && (
+        <>
+          <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ background: 'var(--color-bg-secondary)' }}>
+            {loading ? (
+              <div className="text-center" style={{ color: 'var(--color-muted)' }}>Loading chat...</div>
+            ) : error ? (
+              <div className="text-center" style={{ color: 'var(--color-loqta)' }}>{error}</div>
+            ) : messages.length === 0 ? (
+              <div className="text-center" style={{ color: 'var(--color-muted)' }}>No messages yet.</div>
+            ) : (
+              messages.map((msg, idx) => (
+                <div
+                  key={idx + msg.datetime}
+                  className={`flex flex-col ${msg.sender === user?.username ? 'items-end' : 'items-start'}`}
+                >
+                  <div
+                    className={`rounded-2xl px-4 py-2 max-w-[80%] break-words shadow text-sm flex flex-col gap-1 ` +
+                      (msg.sender === user?.username
+                        ? 'rounded-br-md'
+                        : 'border rounded-bl-md')
+                    }
+                    style={
+                      msg.sender === user?.username
+                        ? {
+                            background: 'var(--color-accent)',
+                            color: 'var(--color-card)'
+                          }
+                        : {
+                            background: 'var(--color-card)',
+                            color: 'var(--color-text)',
+                            borderColor: 'var(--color-muted)',
+                            borderWidth: 1,
+                            borderStyle: 'solid'
+                          }
+                    }
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-xs" style={{ color: 'var(--color-muted)' }}>
+                        {msg.sender === user?.username ? 'You' : msg.sender}
+                      </span>
+                      <span className="text-[10px] ml-2" style={{ color: 'var(--color-muted)' }}>
+                        {new Date(msg.datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    <span>{msg.message}</span>
+                  </div>
+                </div>
+              ))
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+          {/* Input Bar */}
+          <div className="p-3 border-t rounded-b-2xl flex gap-2" style={{ background: 'var(--color-card)', borderColor: 'var(--color-muted)' }}>
+            <input
+              type="text"
+              className="flex-1 rounded-lg border px-3 py-2 focus:outline-none focus:ring-2"
+              style={{
+                background: 'var(--color-card)',
+                color: 'var(--color-text)',
+                borderColor: 'var(--color-muted)'
+              }}
+              placeholder="Type a message..."
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={!isAuthenticated}
+            />
+            <button
+              className="px-4 py-2 rounded-lg font-bold transition disabled:opacity-60"
+              style={{
+                background: 'var(--color-accent)',
+                color: 'var(--color-card)'
+              }}
+              onClick={sendMessage}
+              disabled={!input.trim() || !isAuthenticated}
             >
-              <div className={`px-4 py-2 rounded-xl max-w-[70%] break-words shadow text-sm ${msg.sender === user?.username
-                ? 'bg-accentC text-white'
-                : 'bg-muted/20 text-heading'}`}
-              >
-                <span className="block font-semibold mb-1 text-xs text-muted">
-                  {msg.sender === user?.username ? 'You' : msg.sender}
-                </span>
-                {msg.message}
-                <span className="block text-[10px] text-muted mt-1 text-right">
-                  {new Date(msg.datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
-              </div>
-            </div>
-          ))
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-      <div className="p-3 border-t border-muted/10 bg-cardC rounded-b-2xl flex gap-2">
-        <input
-          type="text"
-          className="flex-1 rounded-lg border border-muted/20 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accentC bg-cardC text-heading"
-          placeholder="Type a message..."
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          disabled={!isAuthenticated}
-        />
-        <button
-          className="px-4 py-2 rounded-lg bg-accentC text-white font-bold hover:bg-accentC/90 transition disabled:opacity-60"
-          onClick={sendMessage}
-          disabled={!input.trim() || !isAuthenticated}
-        >
-          Send
-        </button>
-      </div>
+              Send
+            </button>
+          </div>
+        </>
+      )}
+      <style jsx>{`
+        @media (max-width: 600px) {
+          .loqta-chat {
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            max-width: 100vw !important;
+            border-radius: 0 !important;
+          }
+        }
+      `}</style>
     </div>
   );
 } 

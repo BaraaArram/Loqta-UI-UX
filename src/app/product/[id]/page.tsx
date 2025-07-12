@@ -5,11 +5,12 @@ import Header from "@/components/Header";
 import { useEffect, useState, useCallback, useRef } from 'react';
 import axios from '@/lib/axios';
 import NoData from '@/components/NoData';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '@/store';
 import { Fragment } from 'react';
 import { useRouter } from 'next/navigation';
 import Chat from '@/components/Chat';
-import { useCart } from '@/contexts/CartContext';
+import { addToCart } from '@/features/cart/cartSlice';
 import Swal from 'sweetalert2';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -23,9 +24,13 @@ export default function ProductPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [cartLoading, setCartLoading] = useState(false);
-  const { isAuthenticated, accessToken, hydrated } = useAuth();
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const hydrated = useSelector((state: RootState) => state.auth.hydrated);
+  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
+  const user = useSelector((state: RootState) => state.auth.user);
   const router = useRouter();
-  const { addToCart } = useCart();
+  const dispatch = useDispatch();
+  const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
     if (!hydrated || !accessToken) return;
@@ -111,7 +116,7 @@ export default function ProductPage() {
     
     setCartLoading(true);
     try {
-      await addToCart(product.product_id.toString(), 1);
+      dispatch(addToCart({ productId: product.product_id.toString(), quantity: 1 }));
       
       // Show success alert
       Swal.fire({
@@ -224,7 +229,16 @@ export default function ProductPage() {
       </section>
       {/* PRODUCT CHAT SECTION */}
       <section className="w-full max-w-4xl mx-auto mb-16 px-2">
-        <Chat productId={product.product_id || slug} />
+        {showChat ? (
+          <Chat productId={product.product_id || slug} onClose={() => setShowChat(false)} />
+        ) : (
+          <button
+            className="fixed bottom-4 right-4 z-40 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-700 transition"
+            onClick={() => setShowChat(true)}
+          >
+            Open Chat
+          </button>
+        )}
       </section>
     </>
   );
@@ -232,7 +246,7 @@ export default function ProductPage() {
 
 // --- Reviews Section ---
 function ReviewsSection({ productSlug, product }: { productSlug: string, product: any }) {
-  const { user, isAuthenticated, hydrated, accessToken } = useAuth();
+  const { user, isAuthenticated, hydrated, accessToken } = useSelector((state: RootState) => state.auth);
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -267,6 +281,7 @@ function ReviewsSection({ productSlug, product }: { productSlug: string, product
     try {
       const res = await axios.get(`/api/v1/products/${productSlug}/reviews/`, { withCredentials: true });
       // API returns { data: [ { user, rating, comment, created } ], ... }
+      console.log('Reviews API response:', res.data);
       setReviews(res.data?.data || []);
     } catch (err: any) {
       setError(err.message || 'Failed to load reviews.');
@@ -515,16 +530,25 @@ function ReviewsSection({ productSlug, product }: { productSlug: string, product
               {reviews.map((review: any, idx: number) => {
                 const isOwnReview =
                   hydrated && meUsername &&
-                  typeof review.user === 'string' &&
-                  typeof meUsername === 'string' &&
-                  review.user.trim().toLowerCase() === meUsername.trim().toLowerCase();
+                  ((typeof review.user === 'string' && typeof meUsername === 'string' && review.user.trim().toLowerCase() === meUsername.trim().toLowerCase()) ||
+                   (typeof review.user === 'object' && review.user.username && typeof meUsername === 'string' && review.user.username.trim().toLowerCase() === meUsername.trim().toLowerCase()));
                 // Generate a pastel color for avatar
                 const pastelColors = ['bg-pink-100 text-pink-700', 'bg-blue-100 text-blue-700', 'bg-green-100 text-green-700', 'bg-yellow-100 text-yellow-700', 'bg-purple-100 text-purple-700', 'bg-orange-100 text-orange-700'];
-                const colorIdx = review.user ? review.user.charCodeAt(0) % pastelColors.length : 0;
+                const colorIdx = typeof review.user === 'string' ? review.user.charCodeAt(0) % pastelColors.length : (review.user?.username ? review.user.username.charCodeAt(0) % pastelColors.length : 0);
                 return (
                   <div key={idx} className="bg-cardC rounded-2xl p-5 shadow-md flex flex-col md:flex-row gap-4 border border-muted/20 relative group transition hover:shadow-xl">
                     <div className={`flex-shrink-0 flex flex-col items-center gap-2 w-20`}>
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow ${pastelColors[colorIdx]} bg-accentC/10 text-accentC`}>{review.user ? review.user[0]?.toUpperCase() : '?'}</div>
+                      {typeof review.user === 'object' && review.user.profile_pic ? (
+                        <img
+                          src={review.user.profile_pic || '/profile.png'}
+                          alt={review.user.username || 'User'}
+                          className="w-12 h-12 rounded-full object-cover border-2 border-accentC shadow"
+                        />
+                      ) : (
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow ${pastelColors[colorIdx]} bg-accentC/10 text-accentC`}>
+                          {typeof review.user === 'string' ? review.user[0]?.toUpperCase() : (review.user?.username ? review.user.username[0]?.toUpperCase() : '?')}
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1 flex flex-col gap-1">
                       <div className="flex items-center gap-2">

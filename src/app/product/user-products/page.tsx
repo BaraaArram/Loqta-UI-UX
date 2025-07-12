@@ -1,12 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useAuth } from '@/contexts/AuthContext';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 import api from '@/lib/axios';
 import Header from '@/components/Header';
 import NoData from '@/components/NoData';
 import Link from 'next/link';
 import axios from '@/lib/axios';
 import Swal from 'sweetalert2';
+import { useRouter } from 'next/navigation';
 
 interface Product {
   id: number;
@@ -21,7 +23,8 @@ interface Product {
 }
 
 const UserProductsPage = () => {
-  const { isAuthenticated, hydrated } = useAuth();
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const hydrated = useSelector((state: RootState) => state.auth.hydrated);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,10 +37,11 @@ const UserProductsPage = () => {
   const [categories, setCategories] = useState<{id: number, name: string, slug: string}[]>([]);
   const [catLoading, setCatLoading] = useState(false);
   const [catError, setCatError] = useState('');
+  const router = useRouter();
 
   useEffect(() => {
     if (!hydrated) return;
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) { router.replace('/login'); return null; }
     const fetchUserProducts = async () => {
       setLoading(true);
       setError(null);

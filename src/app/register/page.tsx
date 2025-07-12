@@ -2,7 +2,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '@/store';
+import { register } from '@/features/auth/authSlice';
 import { getErrorMessage, isValidationError, getValidationErrors } from '@/utils/errorHandler';
 import { useState as useReactState } from 'react';
 
@@ -19,7 +21,11 @@ const FIELD_LABELS: Record<string, string> = {
 
 const RegisterPage = () => {
   const router = useRouter();
-  const { register: registerUser, loading, error, clearError, isAuthenticated } = useAuth();
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const hydrated = useSelector((state: RootState) => state.auth.hydrated);
+  const loading = useSelector((state: RootState) => state.auth.loading);
+  const error = useSelector((state: RootState) => state.auth.error);
+  const dispatch = useDispatch();
   const [formData, setFormData] = useState({
     email: '',
     username: '',
@@ -36,8 +42,8 @@ const RegisterPage = () => {
   const [showRePassword, setShowRePassword] = useReactState(false);
 
   useEffect(() => {
-    if (isAuthenticated) router.replace('/profile');
-  }, [isAuthenticated, router]);
+    if (hydrated && isAuthenticated) router.replace('/profile');
+  }, [hydrated, isAuthenticated, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -59,12 +65,11 @@ const RegisterPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
-    clearError();
     setValidationErrors({});
     setGeneralError('');
     setUnmatchedFieldErrors([]);
     try {
-      await registerUser(formData);
+      await dispatch(register(formData) as any).unwrap();
       router.push('/login');
     } catch (error: any) {
       const errorMessage = getErrorMessage(error);
@@ -81,7 +86,6 @@ const RegisterPage = () => {
         });
         setValidationErrors(newValidationErrors);
         setUnmatchedFieldErrors(unmatched);
-        // Only show general error if there are no field errors
         if (errorMessage && fieldErrors.length === 0) {
           setGeneralError(errorMessage);
         } else {
