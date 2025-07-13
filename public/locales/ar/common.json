@@ -18,6 +18,7 @@
   "english": "الإنجليزية",
   "arabic": "العربية",
   "search": "بحث",
+  "apply_coupon": "تطبيق القسيمة",
   "footer_text": "جميع الحقوق محفوظة.",
   "checking_auth": "جاري التحقق من المصادقة...",
   "welcome_back": "مرحبًا بعودتك",
@@ -283,5 +284,10 @@
   "changing": "جاري التغيير...",
   "action_success": "تم بنجاح",
   "action_completed_successfully": "تمت العملية بنجاح.",
-  "add_new_category": "إضافة فئة جديدة"
+  "add_new_category": "إضافة فئة جديدة",
+  "coupon_applied_success": "تم تطبيق القسيمة بنجاح!",
+  "coupon_applied_error": "فشل في تطبيق القسيمة. يرجى التحقق من الرمز والمحاولة مرة أخرى.",
+  "with_discount": "مع الخصم",
+  "without_discount": "بدون خصم",
+  "original_price": "السعر الأصلي"
 } 

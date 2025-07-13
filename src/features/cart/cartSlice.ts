@@ -2,6 +2,11 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from '../../lib/axios';
 
+export interface CartCoupon {
+  code: string;
+  discount: number;
+}
+
 export interface CartItem {
   product_id: string;
   name: string;
@@ -9,16 +14,26 @@ export interface CartItem {
   quantity: number;
   thumbnail?: string;
   category_detail?: { name: string; slug: string };
+  total_price?: number;
+}
+
+export interface CartTotalPrice {
+  with_discount: number;
+  without_discount: number;
 }
 
 interface CartState {
-  cart: CartItem[];
+  cart: {
+    items: CartItem[];
+    coupon?: CartCoupon;
+    total_price?: CartTotalPrice;
+  } | null;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: CartState = {
-  cart: [],
+  cart: null,
   loading: false,
   error: null,
 };
@@ -32,6 +47,7 @@ const normalizeCartItems = (items: any[]) =>
     quantity: item.quantity,
     thumbnail: item.product.thumbnail,
     category_detail: item.product.category_detail,
+    total_price: item.total_price ? parseFloat(item.total_price) : undefined,
   }));
 
 export const fetchCart = createAsyncThunk('cart/fetchCart', async (_, { rejectWithValue }) => {
@@ -39,8 +55,12 @@ export const fetchCart = createAsyncThunk('cart/fetchCart', async (_, { rejectWi
     console.log('[fetchCart] Request: GET /api/v1/cart/');
     const res = await axios.get('/api/v1/cart/', { withCredentials: true });
     console.log('[fetchCart] Response:', res.data);
-    const items = res.data.data?.items || [];
-    return normalizeCartItems(items);
+    const data = res.data.data || {};
+    return {
+      items: normalizeCartItems(data.items || []),
+      coupon: data.coupon,
+      total_price: data.total_price,
+    };
   } catch (err: any) {
     console.error('[fetchCart] Error:', err);
     return rejectWithValue(err.response?.data?.message || err.message || 'Failed to load cart.');
@@ -53,8 +73,12 @@ export const addToCart = createAsyncThunk('cart/addToCart', async ({ productId, 
     await axios.post(`/api/v1/cart/${productId}/add/`, { quantity, override: false }, { withCredentials: true });
     const res = await axios.get('/api/v1/cart/', { withCredentials: true });
     console.log('[addToCart] Response:', res.data);
-    const items = res.data.data?.items || [];
-    return normalizeCartItems(items);
+    const data = res.data.data || {};
+    return {
+      items: normalizeCartItems(data.items || []),
+      coupon: data.coupon,
+      total_price: data.total_price,
+    };
   } catch (err: any) {
     console.error('[addToCart] Error:', err);
     return rejectWithValue(err.response?.data?.message || err.message || 'Failed to add to cart.');
@@ -67,8 +91,12 @@ export const removeFromCart = createAsyncThunk('cart/removeFromCart', async (pro
     await axios.delete(`/api/v1/cart/${productId}/remove/`, { withCredentials: true });
     const res = await axios.get('/api/v1/cart/', { withCredentials: true });
     console.log('[removeFromCart] Response:', res.data);
-    const items = res.data.data?.items || [];
-    return normalizeCartItems(items);
+    const data = res.data.data || {};
+    return {
+      items: normalizeCartItems(data.items || []),
+      coupon: data.coupon,
+      total_price: data.total_price,
+    };
   } catch (err: any) {
     console.error('[removeFromCart] Error:', err);
     return rejectWithValue(err.response?.data?.message || err.message || 'Failed to remove item.');
@@ -80,7 +108,7 @@ export const clearCart = createAsyncThunk('cart/clearCart', async (_, { rejectWi
     console.log('[clearCart] Request: POST /api/v1/cart/clear/');
     await axios.post('/api/v1/cart/clear/', {}, { withCredentials: true });
     console.log('[clearCart] Response: Cart cleared');
-    return [];
+    return null; // Return null as the cart is now empty
   } catch (err: any) {
     console.error('[clearCart] Error:', err);
     return rejectWithValue(err.response?.data?.message || err.message || 'Failed to clear cart.');
@@ -91,23 +119,27 @@ const cartSlice = createSlice({
   name: 'cart',
   initialState,
   reducers: {
-    setCart(state, action: PayloadAction<CartItem[]>) {
+    setCart(state, action: PayloadAction<CartState['cart']>) {
       state.cart = action.payload;
     },
     addToCartLocal(state, action: PayloadAction<{ product: CartItem }>) {
       const item = action.payload.product;
-      const existing = state.cart.find(i => i.product_id === item.product_id);
-      if (existing) {
-        existing.quantity += item.quantity;
-      } else {
-        state.cart.push(item);
+      if (state.cart) {
+        const existing = state.cart.items.find(i => i.product_id === item.product_id);
+        if (existing) {
+          existing.quantity += item.quantity;
+        } else {
+          state.cart.items.push(item);
+        }
       }
     },
     removeFromCartLocal(state, action: PayloadAction<string>) {
-      state.cart = state.cart.filter(i => i.product_id !== action.payload);
+      if (state.cart) {
+        state.cart.items = state.cart.items.filter(i => i.product_id !== action.payload);
+      }
     },
     clearCartLocal(state) {
-      state.cart = [];
+      state.cart = null;
     },
   },
   extraReducers: (builder) => {
@@ -154,7 +186,7 @@ const cartSlice = createSlice({
       })
       .addCase(clearCart.fulfilled, (state) => {
         state.loading = false;
-        state.cart = [];
+        state.cart = null;
       })
       .addCase(clearCart.rejected, (state, action) => {
         state.loading = false;

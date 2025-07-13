@@ -63,7 +63,9 @@ export default function OrdersPage() {
     setLoading(true);
     setError("");
     try {
+      console.log('[fetchOrders] Request: GET /api/v1/orders/?page=' + pageNum);
       const res = await api.get(`/api/v1/orders/?page=${pageNum}`);
+      console.log('[fetchOrders] Response:', res.data);
       setOrders(res.data?.data || []);
       setMeta(res.data?.meta?.pagination || null);
     } catch (err: any) {
@@ -213,11 +215,15 @@ export default function OrdersPage() {
                       </div>
                       <div className="text-muted text-sm flex items-center gap-1">
                         <svg className="h-4 w-4 text-accentC" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3z" /></svg>
-                        {t('discount')}: ${order.discount}
+                        {t('discount')}: {order.discount ? `${order.discount}${order.discount.includes('%') ? '' : '%'}` : '0%'}
+                      </div>
+                      <div className="text-muted text-sm flex items-center gap-1">
+                        <svg className="h-4 w-4 text-accentC" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z" /></svg>
+                        {t('original_price')}: <span className="line-through text-error">${parseFloat(order.original_price).toFixed(2)}</span>
                       </div>
                       <div className="text-lg font-bold text-heading flex items-center gap-1">
                         <svg className="h-5 w-5 text-accentC" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z" /></svg>
-                        {t('total')}: ${order.total_price}
+                        {t('total')}: ${parseFloat(order.total_price).toFixed(2)}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 mt-2 md:mt-0">
