@@ -1,9 +1,10 @@
+// ProductListPage: Displays a list of products with filtering, search, and navigation to product details.
 "use client";
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
-import axios from '../../lib/axios';
-import { useRouter, useSearchParams } from 'next/navigation';
+import axios from '@/lib/axios';
+import { useRouter, useSearchParams, useParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Swal from 'sweetalert2';
 import Link from 'next/link';
@@ -18,6 +19,8 @@ const ProductsPage = () => {
   const loading = useSelector((state: RootState) => state.auth.loading);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const params = useParams();
+  const locale = params?.locale || 'en';
   // Debug log for auth state at render (match profile page)
   console.log('PRODUCT PAGE AUTH STATE', { hydrated, isAuthenticated, loading });
   const [form, setForm] = useState({
@@ -407,7 +410,7 @@ const ProductsPage = () => {
                   </div>
                   <div className="text-lg font-semibold text-accentC">${product.price}</div>
                   <div className="text-sm text-muted">Stock: {product.stock}</div>
-                  <Link href={`/product/${product.id}`} className="mt-2 text-accentC font-bold hover:underline">View Details</Link>
+                  <Link href={`/${locale}/product/${product.slug}`} className="mt-2 text-accentC font-bold hover:underline">View Details</Link>
                 </div>
               ))
             )}

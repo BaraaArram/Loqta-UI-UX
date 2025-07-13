@@ -1,53 +1,70 @@
+// ThemeSwitcher component: Allows users to switch between available UI themes.
 "use client";
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store';
 import { setTheme } from '@/features/theme/themeSlice';
 import { SunIcon, MoonIcon } from '@heroicons/react/24/solid';
-import { FaLeaf, FaPalette, FaStore } from 'react-icons/fa';
+import { FaLeaf, FaPalette, FaStore, FaRegClock } from 'react-icons/fa';
 import { useState } from 'react';
-
-const themes = [
-  { 
-    value: "light", 
-    label: "Light", 
-    icon: <SunIcon className="h-5 w-5" />,
-    description: "Clean and modern light theme",
-    color: "bg-yellow-100 text-yellow-800"
-  },
-  { 
-    value: "dark", 
-    label: "Dark", 
-    icon: <MoonIcon className="h-5 w-5" />,
-    description: "Sophisticated dark theme",
-    color: "bg-slate-800 text-slate-200"
-  },
-  { 
-    value: "autumn", 
-    label: "Autumn", 
-    icon: <FaLeaf className="h-5 w-5" />,
-    description: "Warm and cozy autumn theme",
-    color: "bg-orange-100 text-orange-800"
-  },
-  { 
-    value: "calm", 
-    label: "Calm", 
-    icon: <FaPalette className="h-5 w-5" />,
-    description: "Serene and peaceful blue theme",
-    color: "bg-blue-100 text-blue-800"
-  },
-  { 
-    value: "bazaar", 
-    label: "Bazaar", 
-    icon: <FaStore className="h-5 w-5" />,
-    description: "Vibrant and energetic purple theme",
-    color: "bg-purple-100 text-purple-800"
-  },
-];
+import i18n from '@/lib/i18n';
+import { useTranslation } from 'react-i18next';
 
 export default function ThemeSwitcher() {
   const theme = useSelector((state: RootState) => state.theme.theme);
+  const hydrated = useSelector((state: RootState) => state.theme.hydrated);
   const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
+  const isRTL = i18n.language === 'ar';
+  const { t } = useTranslation('common');
+
+  // Wait for hydration
+  if (!hydrated) return null;
+
+  const themes = [
+    {
+      value: 'light',
+      label: t('theme_light'),
+      icon: <SunIcon className="h-5 w-5" />,
+      description: t('theme_light_desc'),
+      color: 'bg-yellow-100 text-yellow-800',
+    },
+    {
+      value: 'dark',
+      label: t('theme_dark'),
+      icon: <MoonIcon className="h-5 w-5" />,
+      description: t('theme_dark_desc'),
+      color: 'bg-slate-800 text-slate-200',
+    },
+    {
+      value: 'autumn',
+      label: t('theme_autumn'),
+      icon: <FaLeaf className="h-5 w-5" />,
+      description: t('theme_autumn_desc'),
+      color: 'bg-orange-100 text-orange-800',
+    },
+    {
+      value: 'calm',
+      label: t('theme_calm'),
+      icon: <FaPalette className="h-5 w-5" />,
+      description: t('theme_calm_desc'),
+      color: 'bg-blue-100 text-blue-800',
+    },
+    {
+      value: 'bazaar',
+      label: t('theme_bazaar'),
+      icon: <FaStore className="h-5 w-5" />,
+      description: t('theme_bazaar_desc'),
+      color: 'bg-purple-100 text-purple-800',
+    },
+    {
+      value: 'vintage',
+      label: t('theme_vintage'),
+      icon: <FaRegClock className="h-5 w-5" />,
+      description: t('theme_vintage_desc'),
+      color: 'bg-yellow-200 text-yellow-900 border border-yellow-400',
+    },
+  ];
+
   const currentTheme = themes.find(t => t.value === theme) || themes[0];
 
   const handleThemeChange = (newTheme: string) => {
@@ -56,13 +73,13 @@ export default function ThemeSwitcher() {
   };
 
   return (
-    <div className="relative">
+    <div className={`relative ${isRTL ? 'rtl' : 'ltr'}`}>
       {/* Quick Switch Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="group relative p-2 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent/50 bg-accent text-text-inverse hover:bg-accent-hover shadow-md hover:shadow-lg transform hover:scale-105"
-        aria-label="Theme switcher"
-        title="Change theme"
+        aria-label={t('theme_switcher')}
+        title={t('change_theme')}
         type="button"
       >
         {currentTheme.icon}
@@ -74,7 +91,7 @@ export default function ThemeSwitcher() {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-64 bg-card border border-border rounded-xl shadow-xl z-50 overflow-hidden">
           <div className="p-2">
-            <div className="text-sm font-semibold text-heading mb-2 px-2">Choose Theme</div>
+            <div className="text-sm font-semibold text-heading mb-2 px-2">{t('choose_theme')}</div>
             {themes.map((themeOption) => (
               <button
                 key={themeOption.value}
@@ -84,7 +101,7 @@ export default function ThemeSwitcher() {
                     ? 'bg-accent-light text-accent border border-accent' 
                     : 'text-text hover:text-heading'
                 }`}
-                aria-label={`Switch to ${themeOption.label} theme`}
+                aria-label={t('switch_to_theme', { theme: themeOption.label })}
               >
                 <div className={`p-2 rounded-full ${themeOption.color} transition-colors duration-200`}>
                   {themeOption.icon}

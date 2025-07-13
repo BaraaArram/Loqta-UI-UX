@@ -1,3 +1,4 @@
+// useStaffCheck: Custom hook to check if the current user has staff privileges.
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store';

@@ -1,4 +1,4 @@
-// Environment configuration
+// env.ts: Centralized environment and app configuration for the project.
 export const config = {
   // API Configuration
   api: {

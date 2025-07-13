@@ -1,3 +1,4 @@
+// ProfilePage: Displays and manages user profile information and settings.
 "use client";
 import { useEffect, useState, Fragment, useRef } from "react";
 import { useSelector, useDispatch } from 'react-redux';
@@ -11,6 +12,8 @@ import Header from '@/components/Header';
 import NoData from '@/components/NoData';
 import { Transition } from "@headlessui/react";
 import { Dialog, Transition as ModalTransition } from '@headlessui/react';
+import { useTranslation } from 'react-i18next';
+import '@/lib/i18n';
 
 interface UserProfile {
   username: string;
@@ -47,6 +50,7 @@ function Toast({ show, type, message, onClose }: { show: boolean, type: 'success
 }
 
 const ProfilePage = () => {
+  const { t } = useTranslation('common');
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
   const hydrated = useSelector((state: RootState) => state.auth.hydrated);
@@ -149,8 +153,8 @@ const ProfilePage = () => {
           {showPasswordChanged && (
             <div className="w-full mb-4 p-3 bg-accentC/10 border border-accentC rounded-lg text-accentC text-center flex items-center gap-2 justify-center">
               <CheckCircleIcon className="h-5 w-5 text-accentC" />
-              <span>Password changed successfully.</span>
-              <button className="ml-2 text-accentC hover:underline text-xs" onClick={() => setShowPasswordChanged(false)}>Dismiss</button>
+              <span>{t('password_changed_successfully')}</span>
+              <button className="ml-2 text-accentC hover:underline text-xs" onClick={() => setShowPasswordChanged(false)}>{t('dismiss')}</button>
             </div>
           )}
           {error && (
@@ -180,21 +184,21 @@ const ProfilePage = () => {
             <div className="text-text text-base mb-2">{user?.email}</div>
             <div className="text-text text-base mb-4">{user?.phone_number}</div>
             {user?.is_active && (
-              <span className="inline-block bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">Active</span>
+              <span className="inline-block bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">{t('active')}</span>
             )}
           </div>
           <div className="flex gap-4 mt-4">
             <button className="px-6 py-2 bg-accentC text-cardC rounded-lg font-bold shadow hover:bg-accentC/90 transition text-base" onClick={() => setEditModalOpen(true)}>
-              Edit Profile
+              {t('edit_profile')}
             </button>
             <button className="px-6 py-2 bg-cardC text-heading border border-accentC rounded-lg font-bold shadow hover:bg-accentC/10 transition text-base" onClick={() => router.push('/change-password')}>
-              Change Password
+              {t('change_password')}
             </button>
             <button className="px-6 py-2 bg-red-100 text-red-700 rounded-lg font-bold shadow hover:bg-red-200 transition text-base" onClick={async () => {
               await dispatch(logout());
-              showToast('success', 'Logged out successfully!');
+              showToast('success', t('logged_out_successfully'));
             }}>
-              Logout
+              {t('logout')}
             </button>
           </div>
         </section>
@@ -202,33 +206,33 @@ const ProfilePage = () => {
         <section className="bg-cardC rounded-xl shadow p-6 flex flex-col mb-4">
           <div className="flex items-center gap-2 mb-4">
             <ShoppingBagIcon className="h-5 w-5 text-accentC" />
-            <h2 className="text-lg font-bold text-heading">Recent Orders</h2>
+            <h2 className="text-lg font-bold text-heading">{t('recent_orders')}</h2>
           </div>
           <ul className="flex flex-col gap-3">
             {/* Orders content or placeholder */}
-            <li className="text-muted text-center py-4">No recent orders. <Link href="/shop" className="text-accentC underline">Browse products</Link></li>
+            <li className="text-muted text-center py-4">{t('no_recent_orders')}. <Link href="/shop" className="text-accentC underline">{t('browse_products')}</Link></li>
           </ul>
         </section>
         {/* Addresses Section */}
         <section className="bg-cardC rounded-xl shadow p-6 flex flex-col mb-4">
           <div className="flex items-center gap-2 mb-4">
             <HomeIcon className="h-5 w-5 text-accentC" />
-            <h2 className="text-lg font-bold text-heading">Addresses</h2>
+            <h2 className="text-lg font-bold text-heading">{t('addresses')}</h2>
           </div>
           <ul className="flex flex-col gap-3">
             {/* Addresses content or placeholder */}
-            <li className="text-muted text-center py-4">No saved addresses. <Link href="/addresses" className="text-accentC underline">Add address</Link></li>
+            <li className="text-muted text-center py-4">{t('no_saved_addresses')}. <Link href="/addresses" className="text-accentC underline">{t('add_address')}</Link></li>
           </ul>
         </section>
         {/* Wishlist Section */}
         <section className="bg-cardC rounded-xl shadow p-6 flex flex-col mb-4">
           <div className="flex items-center gap-2 mb-4">
             <HeartIcon className="h-5 w-5 text-accentC" />
-            <h2 className="text-lg font-bold text-heading">Wishlist</h2>
+            <h2 className="text-lg font-bold text-heading">{t('wishlist')}</h2>
           </div>
           <div className="flex flex-col gap-4">
             {/* Wishlist content or placeholder */}
-            <div className="text-muted text-center py-4">No items in wishlist. <Link href="/shop" className="text-accentC underline">Browse products</Link></div>
+            <div className="text-muted text-center py-4">{t('no_items_in_wishlist')}. <Link href="/shop" className="text-accentC underline">{t('browse_products')}</Link></div>
           </div>
         </section>
       </main>
@@ -238,7 +242,7 @@ const ProfilePage = () => {
           <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
           <div className="fixed inset-0 flex items-center justify-center p-4">
             <Dialog.Panel className="w-full max-w-lg bg-white dark:bg-cardC rounded-2xl shadow-xl p-8 flex flex-col gap-8 border border-muted/30 animate-fadeIn">
-              <Dialog.Title className="text-2xl font-bold mb-4 text-heading">Edit Profile</Dialog.Title>
+              <Dialog.Title className="text-2xl font-bold mb-4 text-heading">{t('edit_profile')}</Dialog.Title>
               {/* Edit form fields (reuse your previous edit form JSX here) */}
               <form
                 className="w-full max-w-lg mx-auto bg-white dark:bg-cardC rounded-2xl shadow-xl p-8 flex flex-col gap-8 border border-muted/30 animate-fadeIn"
@@ -325,10 +329,10 @@ const ProfilePage = () => {
                     setUser(updatedUser);
                     setEditData(updatedUser);
                     setEditProfilePic(null);
-                    showToast('success', `Profile updated successfully! (${method.toUpperCase()} used)`);
+                    showToast('success', `${t('profile_updated_successfully')}`);
                     setEditModalOpen(false);
                   } catch (err: any) {
-                    showToast('error', err.message || 'Failed to update profile');
+                    showToast('error', err.message || t('failed_to_update_profile'));
                   } finally {
                     setEditLoading(false);
                   }
@@ -336,7 +340,7 @@ const ProfilePage = () => {
               >
                 {/* Profile Picture Upload */}
                 <div className="flex flex-col items-center gap-2">
-                  <label className="text-base font-semibold text-heading mb-1">Profile Picture</label>
+                  <label className="text-base font-semibold text-heading mb-1">{t('profile_picture')}</label>
                   <div className="relative group">
                     <img
                       src={editProfilePic ? URL.createObjectURL(editProfilePic) : user?.profile_pic || '/profile.png'}
@@ -347,20 +351,20 @@ const ProfilePage = () => {
                       type="file"
                       accept="image/*"
                       className="absolute inset-0 opacity-0 cursor-pointer"
-                      title="Upload new profile picture"
+                      title={t('upload_new_profile_picture')}
                       onChange={e => setEditProfilePic(e.target.files?.[0] || null)}
                     />
                     <div className="absolute bottom-2 right-2 bg-accentC text-cardC rounded-full p-2 shadow-lg opacity-80 group-hover:opacity-100 transition">
                       <PencilSquareIcon className="h-5 w-5" />
                     </div>
                   </div>
-                  <span className="text-xs text-muted mt-1">Click to upload a new photo</span>
+                  <span className="text-xs text-muted mt-1">{t('click_to_upload_a_new_photo')}</span>
                 </div>
                 <div className="border-t border-muted/20 my-2"></div>
                 {/* Profile Info Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="flex flex-col gap-1">
-                    <label className="text-sm font-medium text-heading">First Name</label>
+                    <label className="text-sm font-medium text-heading">{t('first_name')}</label>
                     <input
                       className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-accentC bg-bodyC/60"
                       value={editData?.first_name || ''}
@@ -369,7 +373,7 @@ const ProfilePage = () => {
                     />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <label className="text-sm font-medium text-heading">Last Name</label>
+                    <label className="text-sm font-medium text-heading">{t('last_name')}</label>
                     <input
                       className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-accentC bg-bodyC/60"
                       value={editData?.last_name || ''}
@@ -378,7 +382,7 @@ const ProfilePage = () => {
                     />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <label className="text-sm font-medium text-heading">Phone Number</label>
+                    <label className="text-sm font-medium text-heading">{t('phone_number')}</label>
                     <input
                       className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-accentC bg-bodyC/60"
                       value={editData?.phone_number || ''}
@@ -387,7 +391,7 @@ const ProfilePage = () => {
                     />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <label className="text-sm font-medium text-heading">Username</label>
+                    <label className="text-sm font-medium text-heading">{t('username')}</label>
                     <input
                       className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-accentC bg-bodyC/60"
                       value={editData?.username || ''}
@@ -407,7 +411,7 @@ const ProfilePage = () => {
                     disabled={editLoading}
                   >
                     {editLoading && <ArrowPathIcon className="animate-spin h-5 w-5" />}
-                    Save Changes
+                    {t('save_changes')}
                   </button>
                   <button
                     type="button"
@@ -415,7 +419,7 @@ const ProfilePage = () => {
                     onClick={() => { setEditModalOpen(false); setEditError(null); setEditSuccess(null); setEditProfilePic(null); setEditData(user); }}
                     disabled={editLoading}
                   >
-                    Cancel
+                    {t('cancel')}
                   </button>
                 </div>
               </form>

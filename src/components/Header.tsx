@@ -1,3 +1,4 @@
+// Header component: Displays the main navigation, logo, theme switcher, and cart badge.
 "use client";
 import Link from 'next/link';
 import { useSelector, useDispatch } from 'react-redux';
@@ -11,9 +12,11 @@ import CartDrawer from './CartDrawer';
 import { Menu, Transition } from '@headlessui/react';
 import { fetchCart, clearCart } from '@/features/cart/cartSlice';
 import { useStaffCheck } from '@/hooks/useStaffCheck';
+import { useI18n } from '@/hooks/useI18n';
+import '@/styles/amiri-arabic-font.css';
 
 // Enhanced SVG Logo component with better theme integration
-function Logo({ className = "h-8 w-8" }) {
+function Logo({ className = "h-8 w-8", isRTL = false }) {
   return (
     <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
       {/* Bag body with theme-aware colors */}
@@ -101,6 +104,15 @@ export default function Header() {
   const [cartOpen, setCartOpen] = useState(false);
   const cart = useSelector((state: RootState) => state.cart.cart);
   const { isStaff, isStaffLoading } = useStaffCheck();
+  const { t, i18n, isReady } = useI18n();
+  const isRTL = i18n.language === 'ar';
+  const theme = useSelector((state: RootState) => state.theme.theme);
+
+  // Helper function to generate locale-aware URLs
+  const getLocaleUrl = (path: string) => {
+    const currentLocale = i18n.language || 'en';
+    return `/${currentLocale}${path}`;
+  };
 
   useEffect(() => {
     if (hydrated && isAuthenticated) {
@@ -114,58 +126,106 @@ export default function Header() {
 
   const cartItemCount = Array.isArray(cart) ? cart.reduce((sum, item) => sum + (item.quantity || 1), 0) : 0;
 
+  // Language switcher handler
+  const switchLanguage = () => {
+    const newLocale = i18n.language === 'ar' ? 'en' : 'ar';
+    
+    // Update URL to include new locale - this will trigger I18nProvider to change language
+    const segments = pathname.split('/');
+    if (['ar', 'en'].includes(segments[1])) {
+      segments[1] = newLocale;
+    } else {
+      segments.splice(1, 0, newLocale);
+    }
+    
+    // Navigate to the new URL - this will trigger the I18nProvider to change language
+    router.push(segments.join('/'));
+  };
+
   return (
-    <header className="fixed top-0 left-0 w-full z-40 bg-card/80 backdrop-blur-xl shadow-lg border-b border-border/50 transition-all duration-500">
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 py-4">
+    <header className={`fixed top-0 left-0 w-full z-40 bg-card/80 backdrop-blur-xl shadow-lg border-b border-border/50 transition-all duration-500 ${isRTL ? 'rtl' : 'ltr'}`}>
+      <div className={`max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 py-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
         {/* Enhanced Logo and Brand */}
         <Link 
-          href="/" 
+          href={getLocaleUrl('/')} 
           className="flex items-center gap-3 select-none cursor-pointer group" 
           prefetch={false} 
           aria-label="Go to homepage"
         >
           <div className="relative">
-            <Logo className="h-10 w-10 text-accent transition-transform duration-300 group-hover:scale-110" />
+            {isRTL ? (
+              <svg viewBox="0 0 420 120" xmlns="http://www.w3.org/2000/svg" className="h-12 w-auto transition-transform duration-300 group-hover:scale-110">
+                <defs>
+                  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#D4AF37"/>
+                    <stop offset="100%" stopColor="#fffbe6"/>
+                  </linearGradient>
+                </defs>
+                <rect width="100%" height="100%" rx="32" fill="var(--color-bg)"/>
+                <text x="210" y="78" textAnchor="middle"
+                      fontSize="64"
+                      fontFamily="'Amiri', 'Cairo', serif"
+                      fill="var(--color-accent)"
+                      fontWeight="bold"
+                      style={{letterSpacing:'0.08em'}}>
+                  لَقْطَة
+                </text>
+                {/* Damma (ضمة) on ل */}
+                <circle cx="142" cy="40" r="4" fill="url(#gold)" />
+                {/* Sukun on ق */}
+                <circle cx="185" cy="44" r="4" fill="url(#gold)" />
+                {/* Fatha on ط */}
+                <ellipse cx="230" cy="48" rx="7" ry="3" fill="url(#gold)" />
+                {/* Gold dot on ta marbuta (ة) as a lens/spotlight */}
+                <circle cx="265" cy="88" r="7" fill="url(#gold)" opacity="0.85"/>
+                {/* Optional: Gold focus ring */}
+                <ellipse cx="210" cy="75" rx="120" ry="38" fill="none" stroke="url(#gold)" strokeWidth="5" opacity="0.6"/>
+              </svg>
+            ) : (
+              <Logo className="h-10 w-10 text-accent transition-transform duration-300 group-hover:scale-110" isRTL={isRTL} />
+            )}
             <div className="absolute inset-0 rounded-full bg-accent/20 animate-ping opacity-75" />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-xl sm:text-2xl text-heading group-hover:text-accent transition-colors duration-300">
-              Loqta
-            </span>
-            <span className="text-xs text-text-secondary font-medium">Your Shopping Companion</span>
+            {!isRTL && (
+              <span className="font-bold text-xl sm:text-2xl text-heading group-hover:text-accent transition-colors duration-300">
+                {t('loqta')}
+              </span>
+            )}
+            <span className="text-xs text-text-secondary font-medium">{t('your_shopping_companion')}</span>
           </div>
         </Link>
 
         {/* Enhanced Desktop Navigation */}
         <nav className="hidden lg:flex items-center gap-2 flex-1 justify-center">
-          <NavLink href="/" isActive={pathname === '/'} icon={HomeIcon}>
-            Home
+          <NavLink href={getLocaleUrl('/')} isActive={pathname === getLocaleUrl('/')} icon={HomeIcon}>
+            {t('home')}
           </NavLink>
           
           {isAuthenticated ? (
             <>
-              <NavLink href="/dashboard" isActive={pathname === '/dashboard'} icon={CogIcon}>
-                Dashboard
+              <NavLink href={getLocaleUrl('/dashboard')} isActive={pathname === getLocaleUrl('/dashboard')} icon={CogIcon}>
+                {t('dashboard')}
               </NavLink>
               {isStaff === true && (
-                <NavLink href="/dashboard/categories" isActive={pathname === '/dashboard/categories'}>
-                  Categories
+                <NavLink href={getLocaleUrl('/dashboard/categories')} isActive={pathname === getLocaleUrl('/dashboard/categories')}>
+                  {t('categories')}
                 </NavLink>
               )}
-              <NavLink href="/profile" isActive={pathname === '/profile'} icon={UserIcon}>
-                Profile
+              <NavLink href={getLocaleUrl('/profile')} isActive={pathname === getLocaleUrl('/profile')} icon={UserIcon}>
+                {t('profile')}
               </NavLink>
-              <NavLink href="/orders" isActive={pathname === '/orders'} icon={ShoppingBagIcon}>
-                Orders
+              <NavLink href={getLocaleUrl('/orders')} isActive={pathname === getLocaleUrl('/orders')} icon={ShoppingBagIcon}>
+                {t('orders')}
               </NavLink>
             </>
           ) : (
             <>
-              <NavLink href="/login" isActive={pathname === '/login'}>
-                Sign In
+              <NavLink href={getLocaleUrl('/login')} isActive={pathname === getLocaleUrl('/login')}>
+                {t('sign_in')}
               </NavLink>
-              <NavLink href="/register" isActive={pathname === '/register'}>
-                Sign Up
+              <NavLink href={getLocaleUrl('/register')} isActive={pathname === getLocaleUrl('/register')}>
+                {t('sign_up')}
               </NavLink>
             </>
           )}
@@ -175,8 +235,29 @@ export default function Header() {
         <div className="flex items-center gap-3">
           {/* Theme Switcher */}
           <div className="relative">
-            <ThemeSwitcher />
+          <ThemeSwitcher />
           </div>
+
+          {/* Language Switcher */}
+          {isReady && (
+            <button
+              onClick={switchLanguage}
+              className="relative p-3 rounded-xl bg-red-500 hover:bg-red-600 transition-all duration-300 group focus:outline-none focus:ring-2 focus:ring-red-500 text-white border-2 border-red-400 shadow-lg"
+              aria-label={t('switch_language')}
+              title={i18n.language === 'ar' ? t('switch_to_english') : t('switch_to_arabic')}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-white">
+                  {i18n.language === 'ar' ? 'EN' : 'عربي'}
+                </span>
+                <svg className="h-4 w-4 text-white group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                </svg>
+              </div>
+              {/* Hover Effect */}
+              <div className="absolute inset-0 rounded-xl bg-red-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </button>
+          )}
 
           {/* Enhanced Profile Dropdown */}
           {authLoading ? (
@@ -185,12 +266,12 @@ export default function Header() {
             <Menu as="div" className="relative inline-block text-left">
               <Menu.Button className="focus:outline-none group">
                 <div className="relative">
-                  <img
-                    src={user.profile_pic || '/profile.png'}
-                    alt="Profile"
+            <img
+              src={user.profile_pic || '/profile.png'}
+              alt="Profile"
                     className="h-10 w-10 rounded-full object-cover border-2 border-accent/20 shadow-lg group-hover:border-accent group-focus:ring-2 group-focus:ring-accent/50 transition-all duration-300 group-hover:scale-110"
-                    title={user.username || user.email || 'Profile'}
-                  />
+                  title={user.username || user.email || 'Profile'}
+                />
                   <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-success rounded-full border-2 border-card" />
                 </div>
               </Menu.Button>
@@ -207,38 +288,38 @@ export default function Header() {
                 <Menu.Items className="absolute right-0 mt-3 w-56 origin-top-right bg-card border border-border/20 divide-y divide-border/10 rounded-2xl shadow-xl focus:outline-none z-50 backdrop-blur-xl">
                   <div className="px-4 py-4">
                     <p className="text-sm font-semibold text-heading">{user.username || user.email}</p>
-                    <p className="text-xs text-text-secondary mt-1">Online</p>
+                    <p className="text-xs text-text-secondary mt-1">{t('online')}</p>
                   </div>
                   <div className="py-2">
                     <Menu.Item>
                       {({ active }) => (
                         <button
-                          onClick={() => router.push('/profile')}
+                          onClick={() => router.push(getLocaleUrl('/profile'))}
                           className={`w-full text-left px-4 py-3 text-sm flex items-center gap-3 transition-colors duration-200 ${
                             active ? 'bg-accent-light/50 text-accent' : 'text-text hover:bg-accent-light/30'
                           }`}
                         >
                           <UserIcon className="h-4 w-4" />
-                          Profile
+                          {t('profile')}
                         </button>
                       )}
                     </Menu.Item>
                     <Menu.Item>
                       {({ active }) => (
-                        <button
+            <button
                           onClick={async () => {
                             await dispatch(logout() as any);
                             await dispatch(clearCart() as any);
-                            router.push('/login');
+                            router.push(getLocaleUrl('/login'));
                           }}
                           className={`w-full text-left px-4 py-3 text-sm flex items-center gap-3 transition-colors duration-200 ${
                             active ? 'bg-error-light text-error' : 'text-text hover:bg-error-light/30'
                           }`}
-                        >
+            >
                           <ArrowRightOnRectangleIcon className="h-4 w-4" />
-                          Logout
-                        </button>
-                      )}
+                          {t('logout')}
+            </button>
+          )}
                     </Menu.Item>
                   </div>
                 </Menu.Items>
@@ -249,7 +330,7 @@ export default function Header() {
           {/* Enhanced Cart Button */}
           <button
             className="relative p-3 rounded-xl hover:bg-accent-light/50 transition-all duration-300 group focus:outline-none focus:ring-2 focus:ring-accent/50"
-            aria-label="View cart"
+            aria-label={t('view_cart')}
             onClick={() => setCartOpen(true)}
           >
             <ShoppingBagIcon className="h-6 w-6 text-accent group-hover:scale-110 transition-transform duration-300" />
@@ -270,7 +351,7 @@ export default function Header() {
           {/* Enhanced Mobile Menu Button */}
           <button
             className="lg:hidden p-2 rounded-xl hover:bg-accent-light/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-300"
-            aria-label="Open navigation menu"
+            aria-label={t('open_navigation_menu')}
             onClick={() => setMenuOpen(m => !m)}
           >
             <div className="w-6 h-6 flex flex-col justify-center items-center">
@@ -295,71 +376,71 @@ export default function Header() {
         <div className="lg:hidden">
         <nav className="bg-card/95 backdrop-blur-xl border-t border-border/50 px-4 pb-6 pt-4 flex flex-col gap-3">
           <NavLink 
-            href="/" 
-            isActive={pathname === '/'} 
+            href={getLocaleUrl('/')} 
+            isActive={pathname === getLocaleUrl('/')} 
             icon={HomeIcon}
             onClick={() => setMenuOpen(false)}
           >
-            Home
+            {t('home')}
           </NavLink>
           
           {isAuthenticated ? (
             <>
               <NavLink 
-                href="/dashboard" 
-                isActive={pathname === '/dashboard'} 
+                href={getLocaleUrl('/dashboard')} 
+                isActive={pathname === getLocaleUrl('/dashboard')} 
                 icon={CogIcon}
                 onClick={() => setMenuOpen(false)}
               >
-                Dashboard
+                {t('dashboard')}
               </NavLink>
               {isStaff === true && (
                 <NavLink 
-                  href="/dashboard/categories" 
-                  isActive={pathname === '/dashboard/categories'}
+                  href={getLocaleUrl('/dashboard/categories')} 
+                  isActive={pathname === getLocaleUrl('/dashboard/categories')}
                   onClick={() => setMenuOpen(false)}
                 >
-                  Categories
+                  {t('categories')}
                 </NavLink>
               )}
               <NavLink 
-                href="/profile" 
-                isActive={pathname === '/profile'} 
+                href={getLocaleUrl('/profile')} 
+                isActive={pathname === getLocaleUrl('/profile')} 
                 icon={UserIcon}
                 onClick={() => setMenuOpen(false)}
               >
-                Profile
+                {t('profile')}
               </NavLink>
               <NavLink 
-                href="/orders" 
-                isActive={pathname === '/orders'} 
+                href={getLocaleUrl('/orders')} 
+                isActive={pathname === getLocaleUrl('/orders')} 
                 icon={ShoppingBagIcon}
                 onClick={() => setMenuOpen(false)}
               >
-                Orders
+                {t('orders')}
               </NavLink>
             </>
           ) : (
             <>
               <NavLink 
-                href="/login" 
-                isActive={pathname === '/login'}
+                href={getLocaleUrl('/login')} 
+                isActive={pathname === getLocaleUrl('/login')}
                 onClick={() => setMenuOpen(false)}
               >
-                Sign In
+                {t('sign_in')}
               </NavLink>
               <NavLink 
-                href="/register" 
-                isActive={pathname === '/register'}
+                href={getLocaleUrl('/register')} 
+                isActive={pathname === getLocaleUrl('/register')}
                 onClick={() => setMenuOpen(false)}
               >
-                Sign Up
+                {t('sign_up')}
               </NavLink>
             </>
-                      )}
-          </nav>
+          )}
+        </nav>
         </div>
         </Transition>
-      </header>
+    </header>
   );
 }

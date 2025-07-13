@@ -1,3 +1,4 @@
+// axios.ts: Configures the Axios instance with base URL, interceptors, and error handling for API requests.
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { config } from '../config/env';
 import store from '@/store';

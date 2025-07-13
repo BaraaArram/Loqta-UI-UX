@@ -6,7 +6,7 @@ import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark, oneLight } from "react-syntax-highlighter/dist/cjs/styles/prism";
-import "@/styles/docs-theme.css";
+import '../../../styles/docs-theme.css';
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/store";
 import { login, logout } from "@/features/auth/authSlice";
@@ -38,7 +38,7 @@ const documentation = [
   '## Internationalization (i18n)',
   '',
   '- All user-facing text is managed via translation keys in `public/locales/en/common.json` and `public/locales/ar/common.json`.',
-  '- Use `t('key')` from `react-i18next` for all UI strings.',
+'- Use `t(\'key\')` from `react-i18next` for all UI strings.',
   '- Add new keys to both language files for new features or UI.',
   '- Language is detected from the URL and can be switched at runtime.',
   '',
@@ -345,24 +345,9 @@ const components = {
   ),
 };
 
-const sections = [
-  { id: "overview", label: "Overview" },
-  { id: "authentication", label: "Authentication" },
-  { id: "state-management--api-calls", label: "State Management & API Calls" },
-  { id: "filtering", label: "Filtering" },
-  { id: "orders--payment", label: "Orders & Payment" },
-  { id: "themes", label: "Themes" },
-  { id: "reviews", label: "Reviews" },
-  { id: "chat", label: "Chat" },
-  { id: "error--empty-states", label: "Error & Empty States" },
-  { id: "footer", label: "Footer" },
-  { id: "best-practices", label: "Best Practices" },
-  { id: "setup", label: "Setup" },
-];
-
 export default function DocumentationPage() {
   return (
-    <div className="docs-theme-root flex">
+    <div className="docs-theme-root flex min-h-screen">
       {/* Sidebar */}
       <aside className="docs-sidebar">
         <nav>
@@ -393,4 +378,4 @@ export default function DocumentationPage() {
       </main>
     </div>
   );
-}
+} 

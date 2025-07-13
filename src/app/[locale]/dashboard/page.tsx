@@ -1,3 +1,4 @@
+// DashboardPage: Displays user dashboard with stats, quick links, and recent activity for the selected locale.
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
@@ -22,14 +23,15 @@ interface Product {
   slug: string;
 }
 
+const mockStats = [
+  { label: 'total_sales', value: '$12,340', icon: <ChartBarIcon className="h-6 w-6 text-accentC" /> },
+  { label: 'orders', value: '1,234', icon: <ShoppingBagIcon className="h-6 w-6 text-accentC" /> },
+  { label: 'customers', value: '567', icon: <UsersIcon className="h-6 w-6 text-accentC" /> },
+  { label: 'products', value: '89', icon: <CubeIcon className="h-6 w-6 text-accentC" /> },
+];
+
 const DashboardPage = () => {
-  const { t, i18n } = useTranslation('common');
-  const [lang, setLang] = useState(i18n.language);
-  useEffect(() => {
-    const handler = () => setLang(i18n.language);
-    i18n.on('languageChanged', handler);
-    return () => i18n.off('languageChanged', handler);
-  }, [i18n]);
+  const { t } = useTranslation('common');
   const [products, setProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,14 +50,6 @@ const DashboardPage = () => {
   const [categoryError, setCategoryError] = useState("");
   const [categorySuccess, setCategorySuccess] = useState("");
   const modalRef = useRef<HTMLDivElement>(null);
-
-  // Move mockStats inside component for reactivity
-  const mockStats = [
-    { label: t('products'), value: '89', icon: <CubeIcon className="h-6 w-6 text-accentC" /> },
-    { label: t('customers'), value: '567', icon: <UsersIcon className="h-6 w-6 text-accentC" /> },
-    { label: t('orders'), value: '1,234', icon: <ShoppingBagIcon className="h-6 w-6 text-accentC" /> },
-    { label: t('total_sales'), value: '$12,340', icon: <ChartBarIcon className="h-6 w-6 text-accentC" /> },
-  ];
 
   useEffect(() => {
     if (hydrated && !isAuthenticated) {
@@ -158,15 +152,15 @@ const DashboardPage = () => {
             >
               <div>
                 <label className="block text-sm font-medium text-heading mb-1">{t('category_name')}</label>
-              <input
-                type="text"
-                value={categoryName || ""}
-                onChange={e => setCategoryName(e.target.value)}
+                <input
+                  type="text"
+                  value={categoryName || ""}
+                  onChange={e => setCategoryName(e.target.value)}
                   placeholder={t('category_name')}
                   className="w-full p-3 border border-muted rounded-lg bg-bodyC text-heading focus:ring-2 focus:ring-accentC"
-                required
-                autoFocus
-              />
+                  required
+                  autoFocus
+                />
               </div>
               {categoryError && <div className="text-red-600 font-semibold text-sm">{categoryError}</div>}
               {categorySuccess && <div className="text-green-600 font-semibold text-sm">{categorySuccess}</div>}
@@ -193,7 +187,7 @@ const DashboardPage = () => {
             <div key={i} className="bg-cardC rounded-xl shadow p-4 flex flex-col items-center justify-center">
               <div className="mb-2">{stat.icon}</div>
               <div className="text-2xl font-bold text-heading">{stat.value}</div>
-              <div className="text-muted text-sm">{stat.label}</div>
+              <div className="text-muted text-sm">{t(stat.label)}</div>
             </div>
           ))}
         </section>
@@ -223,15 +217,15 @@ const DashboardPage = () => {
           {/* Products */}
           <section className="bg-cardC rounded-xl shadow p-6 flex flex-col">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-heading">Top Products</h2>
+              <h2 className="text-lg font-bold text-heading">{t('top_products')}</h2>
             </div>
             <div className="flex flex-col gap-4">
               {productsLoading ? (
-                <div className="text-center text-muted py-8">Loading...</div>
+                <div className="text-center text-muted py-8">{t('loading')}</div>
               ) : error ? (
                 <NoData message={error} />
               ) : products.length === 0 ? (
-                <NoData message="No products found." action={<Link href="/product" className="text-accentC hover:underline">Add your first product</Link>} />
+                <NoData message={t('no_products_found')} action={<Link href="/product" className="text-accentC hover:underline">{t('add_first_product')}</Link>} />
               ) : (
                 products.map((item, i) => (
                   <div key={i} className="flex items-center gap-4 bg-cardC/80 rounded-lg p-3 shadow-sm">
@@ -239,7 +233,7 @@ const DashboardPage = () => {
                     <div className="flex-1">
                       <div className="font-bold text-heading">{item.name}</div>
                       <div className="text-accentC font-semibold">{item.price}</div>
-                      <div className="text-muted text-xs">Stock: {item.stock}</div>
+                      <div className="text-muted text-xs">{t('stock')}: {item.stock}</div>
                     </div>
                   </div>
                 ))
@@ -249,22 +243,22 @@ const DashboardPage = () => {
           {/* Inventory/Stock */}
           <section className="bg-cardC rounded-xl shadow p-6 flex flex-col">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-heading">Inventory</h2>
-              <button className="px-3 py-1 bg-accentC text-cardC rounded-full font-bold flex items-center gap-1 text-sm hover:bg-accentC/80 transition"><CubeIcon className="h-4 w-4" />Manage</button>
+              <h2 className="text-lg font-bold text-heading">{t('inventory')}</h2>
+              <button className="px-3 py-1 bg-accentC text-cardC rounded-full font-bold flex items-center gap-1 text-sm hover:bg-accentC/80 transition"><CubeIcon className="h-4 w-4" />{t('manage')}</button>
             </div>
             <ul className="flex flex-col gap-2">
               {productsLoading ? (
-                <div className="text-center text-muted py-8">Loading...</div>
+                <div className="text-center text-muted py-8">{t('loading')}</div>
               ) : error ? (
                 <NoData message={error} />
               ) : products.length === 0 ? (
-                <NoData message="No inventory found." action={<Link href="/product" className="text-accentC hover:underline">Add your first product</Link>} />
+                <NoData message={t('no_inventory_found')} action={<Link href="/product" className="text-accentC hover:underline">{t('add_first_product')}</Link>} />
               ) : (
                 products.map((item, i) => (
                   <li key={i} className="flex items-center gap-3">
                     <span className="font-bold text-heading">{item.name}</span>
-                    <span className="text-muted text-xs">Stock: {item.stock}</span>
-                    {item.stock < 10 && <span className="ml-auto px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs">Low</span>}
+                    <span className="text-muted text-xs">{t('stock')}: {item.stock}</span>
+                    {item.stock < 10 && <span className="ml-auto px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs">{t('low')}</span>}
                   </li>
                 ))
               )}
@@ -275,14 +269,14 @@ const DashboardPage = () => {
       <a
         href="/product"
         className="fixed bottom-8 right-8 z-50 flex items-center gap-2 px-6 py-4 bg-accentC text-cardC rounded-full shadow-2xl hover:bg-accentC/90 transition text-lg font-bold group focus:outline-none focus:ring-4 focus:ring-accentC/30"
-        title="Add Product"
+        title={t('add_product')}
       >
         <PlusIcon className="h-7 w-7" />
         <span className="hidden md:inline">{t('add_product')}</span>
       </a>
       <Link href="/dashboard/categories">
         <button className="btn btn-primary flex items-center gap-2 mt-4">
-          <span>Categories</span>
+          <span>{t('categories')}</span>
         </button>
       </Link>
     </div>

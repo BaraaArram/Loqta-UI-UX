@@ -1,3 +1,4 @@
+// store.ts: Configures and exports the Redux store for the application.
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './features/auth/authSlice';
 import cartReducer from './features/cart/cartSlice';

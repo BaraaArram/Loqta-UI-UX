@@ -1,3 +1,4 @@
+// errorHandler.ts: Utility functions for handling and formatting API and application errors.
 export interface ApiError {
   message: string;
   status?: number;

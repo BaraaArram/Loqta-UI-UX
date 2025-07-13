@@ -1,13 +1,17 @@
+// CartDrawer component: Provides a slide-out cart UI for viewing and managing cart items.
 "use client";
 import { useEffect, useState, useRef } from 'react';
 import api from '@/lib/axios';
 import NoData from './NoData';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '@/store';
-import { removeFromCart, clearCart, fetchCart } from '@/features/cart/cartSlice';
+import { removeFromCart, clearCart, fetchCart, setCart, removeFromCartLocal, clearCartLocal } from '@/features/cart/cartSlice';
 import Swal from 'sweetalert2';
 import { useRouter } from 'next/navigation';
 import { XMarkIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { useTranslation } from 'react-i18next';
+import '@/lib/i18n';
+import { useI18n } from '@/hooks/useI18n';
 
 interface CartDrawerProps {
   open: boolean;
@@ -15,6 +19,9 @@ interface CartDrawerProps {
 }
 
 export default function CartDrawer({ open, onClose }: CartDrawerProps) {
+  const { t } = useTranslation('common');
+  const { i18n } = useI18n();
+  const isRTL = i18n.language === 'ar';
   const cart = useSelector((state: RootState) => state.cart.cart);
   const loading = useSelector((state: RootState) => state.cart.loading);
   const error = useSelector((state: RootState) => state.cart.error);
@@ -26,6 +33,13 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
   const [coupon, setCoupon] = useState('');
   const router = useRouter();
   const drawerRef = useRef<HTMLDivElement>(null);
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+
+  // Helper function to generate locale-aware URLs
+  const getLocaleUrl = (path: string) => {
+    const currentLocale = i18n.language || 'en';
+    return `/${currentLocale}${path}`;
+  };
 
   // Focus trap for accessibility
   useEffect(() => {
@@ -46,14 +60,28 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
 
   useEffect(() => {
     if (open) {
-      dispatch(fetchCart());
+      if (isAuthenticated) {
+        dispatch(fetchCart());
+      } else if (typeof window !== 'undefined') {
+        // Load cart from localStorage for guests
+        const localCart = JSON.parse(localStorage.getItem('cart') || '[]');
+        dispatch(setCart(localCart));
+      }
     }
-  }, [open, dispatch]);
+  }, [open, dispatch, isAuthenticated]);
 
   const handleRemove = async (product_id: string) => {
     setRemoving(product_id);
     try {
-      dispatch(removeFromCart(product_id));
+      if (isAuthenticated) {
+        dispatch(removeFromCart(product_id));
+      } else {
+        dispatch(removeFromCartLocal(product_id));
+        // Update localStorage
+        const localCart = JSON.parse(localStorage.getItem('cart') || '[]').filter((i: any) => i.product_id !== product_id);
+        localStorage.setItem('cart', JSON.stringify(localCart));
+        dispatch(setCart(localCart));
+      }
     } finally {
       setRemoving(null);
     }
@@ -64,26 +92,41 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
     setOrderMessage(null);
     setOrderSuccess(false);
     if (cart.length === 0) {
-      setOrderMessage('Your cart is empty.');
+      setOrderMessage(t('cart_empty'));
       setPlacingOrder(false);
+      return;
+    }
+    if (!isAuthenticated) {
+      setOrderMessage(t('please_login_to_checkout'));
+      setPlacingOrder(false);
+      Swal.fire({
+        icon: 'info',
+        title: t('login_required'),
+        text: t('please_login_to_checkout'),
+        confirmButtonText: t('ok'),
+        confirmButtonColor: '#3085d6',
+      }).then(() => {
+        router.push(getLocaleUrl('/login'));
+      });
       return;
     }
     try {
       let body: any = { quantity: 2147483647, coupon: coupon || undefined, status: 'PE' };
       const res = await api.post('/api/v1/orders/', body, { withCredentials: true });
-      setOrderMessage('Order placed successfully!');
+      setOrderMessage(t('order_placed_successfully'));
       setOrderSuccess(true);
       dispatch(fetchCart());
       Swal.fire({
         icon: 'success',
-        title: 'Order Placed',
-        text: 'Your order has been placed successfully!',
+        title: t('order_placed'),
+        text: t('order_placed_text'),
+        confirmButtonText: t('ok'),
         confirmButtonColor: '#3085d6',
       }).then(() => {
-        router.push('/orders');
+        router.push(getLocaleUrl('/orders'));
       });
     } catch (err: any) {
-      setOrderMessage(err?.response?.data?.message || 'Failed to place order.');
+      setOrderMessage(err?.response?.data?.message || t('failed_to_place_order'));
     }
     setPlacingOrder(false);
   };
@@ -102,25 +145,25 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
       <div
         className={`absolute inset-0 bg-bg/60 backdrop-blur-sm transition-opacity duration-500 ${open ? 'opacity-100' : 'opacity-0'}`}
         onClick={onClose}
-        aria-label="Close cart"
+        aria-label={t('close_cart')}
         tabIndex={-1}
       />
       {/* Drawer */}
       <aside
         ref={drawerRef}
         tabIndex={-1}
-        className={`absolute right-0 top-0 h-full w-full max-w-xl bg-card/95 shadow-xl border-l border-border/30 transform transition-transform duration-500 ${open ? 'translate-x-0' : 'translate-x-full'} rounded-l-3xl flex flex-col focus:outline-none`}
+        className={`absolute right-0 top-0 h-full w-full max-w-xl bg-card/95 shadow-xl border-l border-border/30 transform transition-transform duration-500 ${open ? 'translate-x-0' : 'translate-x-full'} rounded-l-3xl flex flex-col focus:outline-none ${isRTL ? 'rtl' : 'ltr'}`}
         style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.10)' }}
         role="dialog"
         aria-modal="true"
-        aria-label="Shopping cart drawer"
+        aria-label={t('shopping_cart_drawer')}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-8 py-6 border-b border-border/20 bg-card rounded-tl-3xl sticky top-0 z-10">
-          <h2 className="text-2xl font-bold text-heading tracking-tight">Your Cart</h2>
+          <h2 className="text-2xl font-bold text-heading tracking-tight">{t('your_cart')}</h2>
           <button
             onClick={onClose}
-            aria-label="Close cart"
+            aria-label={t('close_cart')}
             className="p-2 rounded-full text-muted hover:text-accent hover:bg-accent-light/40 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-200"
           >
             <XMarkIcon className="h-7 w-7" />
@@ -136,7 +179,7 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
             <div className="text-error text-center font-semibold py-8">{error}</div>
           ) : cart.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-40 gap-2">
-              <NoData message="Your cart is empty." />
+              <NoData message={t('cart_empty')} />
             </div>
           ) : (
             <ul className="flex flex-col gap-6">
@@ -159,7 +202,7 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
                     className="text-error hover:text-error-light font-bold text-xl p-2 rounded-full bg-card shadow border border-error/10 hover:border-error/30 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-error/30"
                     onClick={() => handleRemove(item.product_id)}
                     disabled={removing === item.product_id}
-                    aria-label={`Remove ${item.name} from cart`}
+                    aria-label={t('remove_item', { itemName: item.name })}
                   >
                     {removing === item.product_id ? (
                       <svg className="animate-spin h-6 w-6" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
@@ -176,32 +219,32 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
         {Array.isArray(cart) && cart.length > 0 && (
           <div className="px-8 py-7 border-t border-border/20 bg-card rounded-bl-3xl flex flex-col gap-4 sticky bottom-0 z-10 shadow-[0_-2px_16px_0_rgba(31,38,135,0.04)]">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-lg font-semibold text-heading">Total</span>
+              <span className="text-lg font-semibold text-heading">{t('total')}</span>
               <span className="text-2xl font-bold text-accent">${total.toFixed(2)}</span>
             </div>
             {/* Coupon input */}
             <input
               type="text"
               className="w-full px-4 py-3 rounded-lg border border-border/30 bg-bg-secondary text-heading placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/30 transition-all duration-200 text-base outline-none"
-              placeholder="Coupon code (optional)"
+              placeholder={t('coupon_code_placeholder')}
               value={coupon}
               onChange={e => setCoupon(e.target.value)}
               disabled={placingOrder}
-              aria-label="Coupon code"
+              aria-label={t('coupon_code')}
             />
             {/* Place Order button */}
             <button
               className="w-full px-5 py-3 bg-accent text-button-text rounded-lg font-bold hover:bg-accent-hover transition-all duration-200 text-lg shadow focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:opacity-60 flex items-center justify-center gap-2"
               onClick={handlePlaceOrder}
               disabled={placingOrder || cart.length === 0}
-              aria-label="Place order"
+              aria-label={t('place_order')}
             >
               {placingOrder ? (
                 <svg className="animate-spin h-6 w-6" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
               ) : orderSuccess ? (
                 <CheckCircleIcon className="h-6 w-6 text-success" />
               ) : (
-                'Place Order'
+                t('place_order')
               )}
             </button>
             {orderMessage && (

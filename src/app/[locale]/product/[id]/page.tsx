@@ -1,3 +1,4 @@
+// ProductPage: Displays details, reviews, and actions for a single product, with add-to-cart and review features.
 "use client";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -9,15 +10,17 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store';
 import { Fragment } from 'react';
 import { useRouter } from 'next/navigation';
-import Chat from '@/components/Chat';
 import { addToCart } from '@/features/cart/cartSlice';
 import Swal from 'sweetalert2';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { useTranslation } from 'react-i18next';
 dayjs.extend(relativeTime);
+import 'dayjs/locale/ar';
 
 export default function ProductPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const slug = params.id;
   const [product, setProduct] = useState<any>(null);
@@ -30,7 +33,6 @@ export default function ProductPage() {
   const user = useSelector((state: RootState) => state.auth.user);
   const router = useRouter();
   const dispatch = useDispatch();
-  const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
     if (!hydrated || !accessToken) return;
@@ -41,14 +43,14 @@ export default function ProductPage() {
         const res = await axios.get(`/api/v1/products/${slug}/`, { withCredentials: true });
         setProduct(res.data?.data || null);
       } catch (err) {
-        setError('Product not found.');
+        setError(t('product_not_found'));
         setProduct(null);
       } finally {
         setLoading(false);
       }
     };
     if (slug) fetchProduct();
-  }, [slug, hydrated, accessToken]);
+  }, [slug, hydrated, accessToken, t]);
 
   useEffect(() => {
     if (hydrated && !isAuthenticated) {
@@ -60,7 +62,7 @@ export default function ProductPage() {
     return (
       <>
         <Header />
-        <div className="min-h-[60vh] flex items-center justify-center text-accentC text-xl font-bold animate-pulse">Loading authentication...</div>
+        <div className="min-h-[60vh] flex items-center justify-center text-accentC text-xl font-bold animate-pulse">{t('loading_authentication')}</div>
       </>
     );
   }
@@ -69,7 +71,7 @@ export default function ProductPage() {
     return (
       <>
         <Header />
-        <div className="min-h-[60vh] flex items-center justify-center text-accentC text-xl font-bold animate-pulse">Loading product...</div>
+        <div className="min-h-[60vh] flex items-center justify-center text-accentC text-xl font-bold animate-pulse">{t('loading_product')}</div>
       </>
     );
   }
@@ -78,7 +80,7 @@ export default function ProductPage() {
     return (
       <>
         <Header />
-        <NoData message={error || 'Product not found.'} action={<Link href="/" className="text-accentC hover:underline">Back to Home</Link>} />
+        <NoData message={error || t('product_not_found')} action={<Link href="/" className="text-accentC hover:underline">{t('back_to_home')}</Link>} />
       </>
     );
   }
@@ -88,13 +90,13 @@ export default function ProductPage() {
     
     if (!isAuthenticated || !accessToken) {
       Swal.fire({
-        title: 'Login Required',
-        text: 'Please log in to add items to your cart.',
+        title: t('login_required'),
+        text: t('login_to_add_cart'),
         icon: 'info',
-        confirmButtonText: 'Login',
+        confirmButtonText: t('login'),
         confirmButtonColor: '#0ea5e9',
         showCancelButton: true,
-        cancelButtonText: 'Cancel'
+        cancelButtonText: t('cancel')
       }).then((result) => {
         if (result.isConfirmed) {
           router.push('/login');
@@ -105,10 +107,10 @@ export default function ProductPage() {
     
     if (product.stock <= 0) {
       Swal.fire({
-        title: 'Out of Stock',
-        text: 'This product is currently out of stock.',
+        title: t('out_of_stock'),
+        text: t('product_out_of_stock'),
         icon: 'warning',
-        confirmButtonText: 'OK',
+        confirmButtonText: t('ok'),
         confirmButtonColor: '#f59e0b'
       });
       return;
@@ -120,19 +122,28 @@ export default function ProductPage() {
       
       // Show success alert
       Swal.fire({
-        title: 'Added to Cart!',
-        text: `${product.name} has been added to your cart successfully.`,
+        title: t('added_to_cart'),
+        text: t('product_added_to_cart', { product: product.name }),
         icon: 'success',
         timer: 2000,
         timerProgressBar: true,
         showConfirmButton: false,
+        showCloseButton: true,
         toast: true,
         position: 'top-end',
         background: '#10b981',
         color: '#ffffff',
         customClass: {
           popup: 'rounded-lg shadow-lg'
-        }
+        },
+        didOpen: (toast) => {
+          toast.addEventListener('mouseenter', Swal.stopTimer);
+          toast.addEventListener('mouseleave', Swal.resumeTimer);
+        },
+        allowOutsideClick: true,
+        allowEscapeKey: true,
+        allowEnterKey: true,
+        backdrop: false
       });
       
     } catch (error: any) {
@@ -140,10 +151,10 @@ export default function ProductPage() {
       
       // Show error alert
       Swal.fire({
-        title: 'Oops...',
-        text: error.message || 'Failed to add item to cart. Please try again.',
+        title: t('oops'),
+        text: error.message || t('failed_to_add_cart'),
         icon: 'error',
-        confirmButtonText: 'OK',
+        confirmButtonText: t('ok'),
         confirmButtonColor: '#ef4444',
         background: '#fef2f2',
         color: '#991b1b'
@@ -154,9 +165,9 @@ export default function ProductPage() {
   };
 
   return (
-    <>
+    <div className="bg-bodyC text-heading min-h-screen flex flex-col">
       <Header />
-      <main className="min-h-[70vh] flex items-center justify-center py-16 px-2">
+      <main className="flex-1 flex flex-col items-center justify-center py-16 px-2">
         <div className="w-full max-w-4xl bg-cardC rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden border border-muted/30">
           <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-accentC/10 via-cardC/40 to-bodyC p-8 relative">
             <img
@@ -165,7 +176,7 @@ export default function ProductPage() {
               className="w-64 h-64 md:w-80 md:h-80 object-cover rounded-2xl shadow-xl border-2 border-white dark:border-cardC bg-white/80 transition-transform duration-300 hover:scale-105"
             />
             {product.stock <= 5 && (
-              <span className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow">Low Stock</span>
+              <span className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow">{t('low_stock')}</span>
             )}
           </div>
           <div className="flex-1 flex flex-col gap-6 p-8 items-center md:items-start justify-center">
@@ -184,7 +195,7 @@ export default function ProductPage() {
               {[...Array(5)].map((_, i) => (
                 <svg key={i} className={`h-5 w-5 ${i < (product.rating?.average || 0) ? 'text-yellow-400' : 'text-muted/40'}`} fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.388-2.46a1 1 0 00-1.175 0l-3.388 2.46c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118l-3.388-2.46c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.967z" /></svg>
               ))}
-              <span className="ml-2 text-sm text-muted">{product.rating?.average?.toFixed(1) || 0} ({product.rating?.count || 0} reviews)</span>
+              <span className="ml-2 text-sm text-muted">{product.rating?.average?.toFixed(1) || 0} ({product.rating?.count || 0} {t('reviews')})</span>
             </div>
             <p className="text-base md:text-lg text-muted mb-4 whitespace-pre-line">{product.description}</p>
             <div className="flex flex-wrap gap-2 mb-2">
@@ -194,7 +205,7 @@ export default function ProductPage() {
             </div>
             <div className="flex items-center gap-3 mb-2">
               <span className={`px-3 py-1 rounded-full text-xs font-bold shadow border ${product.stock > 0 ? (product.stock <= 5 ? 'bg-yellow-100 text-yellow-800 border-yellow-300' : 'bg-green-100 text-green-700 border-green-300') : 'bg-red-100 text-red-700 border-red-300'}`}>
-                {product.stock > 0 ? (product.stock <= 5 ? `Only ${product.stock} left!` : 'In Stock') : 'Out of Stock'}
+                {product.stock > 0 ? (product.stock <= 5 ? t('only_x_left', { count: product.stock }) : t('in_stock')) : t('out_of_stock')}
               </span>
             </div>
             <form
@@ -209,43 +220,31 @@ export default function ProductPage() {
                 {cartLoading ? (
                   <>
                     <svg className="animate-spin h-6 w-6 mr-2 text-cardC" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
-                    Adding...
+                    {t('adding')}
                   </>
                 ) : (
                   <>
                     <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.35 2.7A1 1 0 007.52 17h8.96a1 1 0 00.87-1.45L17 13M7 13V6h10v7" /></svg>
-                    Add to Cart
+                    {t('add_to_cart')}
                   </>
                 )}
               </button>
             </form>
-            <Link href="/" className="text-accentC hover:underline mt-4">Back to Home</Link>
+            <Link href="/" className="text-accentC hover:underline mt-4">{t('back_to_home')}</Link>
           </div>
         </div>
       </main>
       {/* REVIEWS SECTION */}
       <section className="w-full max-w-4xl mx-auto mt-8 mb-16 px-2">
-        {hydrated ? <ReviewsSection productSlug={product.slug} product={product} /> : <div className="text-center text-accentC animate-pulse">Loading authentication...</div>}
+        {hydrated ? <ReviewsSection productSlug={product.slug} product={product} /> : <div className="text-center text-accentC animate-pulse">{t('loading_authentication')}</div>}
       </section>
-      {/* PRODUCT CHAT SECTION */}
-      <section className="w-full max-w-4xl mx-auto mb-16 px-2">
-        {showChat ? (
-          <Chat productId={product.product_id || slug} onClose={() => setShowChat(false)} />
-        ) : (
-          <button
-            className="fixed bottom-4 right-4 z-40 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-700 transition"
-            onClick={() => setShowChat(true)}
-          >
-            Open Chat
-          </button>
-        )}
-      </section>
-    </>
+    </div>
   );
 }
 
 // --- Reviews Section ---
 function ReviewsSection({ productSlug, product }: { productSlug: string, product: any }) {
+  const { t, i18n } = useTranslation();
   const { user, isAuthenticated, hydrated, accessToken } = useSelector((state: RootState) => state.auth);
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -273,6 +272,11 @@ function ReviewsSection({ productSlug, product }: { productSlug: string, product
     };
     fetchMe();
   }, [hydrated, accessToken]);
+
+  // Set dayjs locale to match i18n language
+  useEffect(() => {
+    dayjs.locale(i18n.language === 'ar' ? 'ar' : 'en');
+  }, [i18n.language]);
 
   // Fetch reviews
   const fetchReviews = useCallback(async () => {
@@ -316,13 +320,11 @@ function ReviewsSection({ productSlug, product }: { productSlug: string, product
       await fetchReviews();
       Swal.fire({
         icon: 'success',
-        title: 'Review submitted!',
-        toast: true,
-        timer: 2000,
-        position: 'top-end',
-        showConfirmButton: false,
-        background: '#10b981',
-        color: '#fff',
+        title: t('review_submitted'),
+        text: t('review_submitted_text'),
+        confirmButtonText: t('ok'),
+        confirmButtonColor: '#10b981',
+        timer: 2000
       });
     } catch (err: any) {
       if (Array.isArray(err.originalData)) {
@@ -343,13 +345,11 @@ function ReviewsSection({ productSlug, product }: { productSlug: string, product
       }
       Swal.fire({
         icon: 'error',
-        title: 'Failed to submit review',
-        toast: true,
-        timer: 2000,
-        position: 'top-end',
-        showConfirmButton: false,
-        background: '#ef4444',
-        color: '#fff',
+        title: t('failed_to_submit_review'),
+        text: t('failed_to_submit_review_text'),
+        confirmButtonText: t('ok'),
+        confirmButtonColor: '#ef4444',
+        timer: 2000
       });
     } finally {
       setSubmitting(false);
@@ -386,13 +386,11 @@ function ReviewsSection({ productSlug, product }: { productSlug: string, product
       await fetchReviews();
       Swal.fire({
         icon: 'success',
-        title: 'Review updated!',
-        toast: true,
-        timer: 2000,
-        position: 'top-end',
-        showConfirmButton: false,
-        background: '#10b981',
-        color: '#fff',
+        title: t('review_updated'),
+        text: t('review_updated_text'),
+        confirmButtonText: t('ok'),
+        confirmButtonColor: '#10b981',
+        timer: 2000
       });
     } catch (err: any) {
       setReviewAuthError('Failed to update review.');
@@ -434,13 +432,11 @@ function ReviewsSection({ productSlug, product }: { productSlug: string, product
       await fetchReviews();
       Swal.fire({
         icon: 'success',
-        title: 'Review deleted!',
-        toast: true,
-        timer: 2000,
-        position: 'top-end',
-        showConfirmButton: false,
-        background: '#10b981',
-        color: '#fff',
+        title: t('review_deleted'),
+        text: t('review_deleted_text'),
+        confirmButtonText: t('ok'),
+        confirmButtonColor: '#10b981',
+        timer: 2000
       });
     } catch (err: any) {
       setReviewAuthError('Failed to delete review.');
@@ -497,7 +493,7 @@ function ReviewsSection({ productSlug, product }: { productSlug: string, product
         </div>
       )}
       <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
-        Reviews
+        {t('reviews')}
         <span className="text-base font-normal text-muted">({reviews.length})</span>
       </h2>
       {loading ? (
@@ -522,8 +518,8 @@ function ReviewsSection({ productSlug, product }: { productSlug: string, product
           {reviews.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-muted">
               <span className="text-5xl mb-2">📝</span>
-              <div className="text-lg font-semibold mb-1">No reviews yet</div>
-              <div className="text-base">Be the first to share your thoughts!</div>
+              <div className="text-lg font-semibold mb-1">{t('no_reviews_yet')}</div>
+              <div className="text-base">{t('be_first_to_share')}</div>
             </div>
           ) : (
             <div className="flex flex-col gap-4 max-h-96 overflow-y-auto pr-2">
@@ -576,23 +572,23 @@ function ReviewsSection({ productSlug, product }: { productSlug: string, product
                           </div>
                         </form>
                       ) : (
-                        <p className="text-sm text-heading whitespace-pre-line min-h-[1.5em]">{review.comment ?? <span className='italic text-muted'>No comment provided.</span>}</p>
+                        <p className="text-sm text-heading whitespace-pre-line min-h-[1.5em]">{review.comment ?? <span className='italic text-muted'>{t('no_comment_provided')}</span>}</p>
                       )}
                     </div>
                     {isOwnReview && editingId !== idx && (
                       <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100 transition">
                         <button
                           className="p-2 rounded-full bg-accentC/10 hover:bg-accentC/20 text-accentC transition flex items-center justify-center"
-                          title="Edit Review"
-                          aria-label="Edit Review"
+                          title={t('edit_review')}
+                          aria-label={t('edit_review')}
                           onClick={() => { setEditingId(idx); setEditForm({ rating: review.rating, text: review.comment || '' }); }}
                         >
                           <PencilSquareIcon className="h-5 w-5" />
                         </button>
                         <button
                           className="p-2 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition flex items-center justify-center disabled:opacity-60"
-                          title="Delete Review"
-                          aria-label="Delete Review"
+                          title={t('delete_review')}
+                          aria-label={t('delete_review')}
                           disabled={deletingId === idx}
                           onClick={() => handleDeleteReview(review, idx)}
                         >
@@ -611,22 +607,22 @@ function ReviewsSection({ productSlug, product }: { productSlug: string, product
       {hydrated && isAuthenticated && !reviews.some(r => r.user === user?.username) && (
         <form onSubmit={handleAddReview} className="mt-8 bg-cardC rounded-2xl p-6 shadow flex flex-col gap-3 border border-muted/20 animate-fade-in">
           <div className="flex items-center gap-2 mb-2">
-            <span className="font-semibold">Your Rating:</span>
+            <span className="font-semibold">{t('your_rating')}:</span>
             {[1,2,3,4,5].map((star) => (
               <button type="button" key={star} onClick={() => setForm(f => ({...f, rating: star}))} className={form.rating >= star ? 'text-yellow-400' : 'text-muted/30'}>
                 <svg className="h-7 w-7 transition-transform transform hover:scale-110 focus:scale-110" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.388-2.46a1 1 0 00-1.175 0l-3.388 2.46c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118l-3.388-2.46c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.967z" /></svg>
               </button>
             ))}
           </div>
-          <textarea className="w-full rounded border border-muted/30 p-2 text-sm" rows={3} value={form.text} onChange={e => setForm(f => ({...f, text: e.target.value}))} required maxLength={500} placeholder="Write your review..." />
-          <button type="submit" className="px-6 py-2 rounded bg-accentC text-white font-bold hover:bg-accentC/90 transition mt-2 disabled:opacity-60" disabled={submitting || !form.rating || !form.text.trim()}>{submitting ? 'Submitting...' : 'Submit Review'}</button>
+          <textarea className="w-full rounded border border-muted/30 p-2 text-sm" rows={3} value={form.text} onChange={e => setForm(f => ({...f, text: e.target.value}))} required maxLength={500} placeholder={t('write_your_review')} />
+          <button type="submit" className="px-6 py-2 rounded bg-accentC text-white font-bold hover:bg-accentC/90 transition mt-2 disabled:opacity-60" disabled={submitting || !form.rating || !form.text.trim()}>{submitting ? 'Submitting...' : t('submit_review')}</button>
         </form>
       )}
       {!hydrated && (
-        <div className="mt-8 text-center text-muted animate-pulse">Loading authentication...</div>
+        <div className="mt-8 text-center text-muted animate-pulse">{t('loading_authentication')}</div>
       )}
       {hydrated && !isAuthenticated && (
-        <div className="mt-8 text-center text-muted">Please <Link href="/login" className="text-accentC hover:underline">log in</Link> to write a review.</div>
+        <div className="mt-8 text-center text-muted">{t('please_login_to_write_review')}</div>
       )}
     </div>
   );

@@ -1,3 +1,4 @@
+// DashboardCategoriesPage: Manages and displays product categories in the user dashboard.
 "use client";
 
 import React, { useEffect, useState } from 'react';
@@ -35,7 +36,7 @@ const CategoriesPage = () => {
   const [deleteCategory, setDeleteCategory] = useState<Category | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
-  const { t } = useTranslation();
+  const { t } = useTranslation('common');
 
   useEffect(() => {
     if (hydrated && !isAuthenticated) {
@@ -93,9 +94,9 @@ const CategoriesPage = () => {
       setEditCategory(null);
       setEditName('');
       await fetchCategories();
-      setActionMessage('Category updated!');
+      setActionMessage(t('category_updated'));
     } catch (err) {
-      setActionMessage('Failed to update category.');
+      setActionMessage(t('failed_to_update_category'));
     }
     setActionLoading(false);
   };
@@ -109,10 +110,10 @@ const CategoriesPage = () => {
       await api.delete(`/api/v1/categories/${deleteCategory.slug}/`, { withCredentials: true });
       setDeleteCategory(null);
       await fetchCategories();
-      setActionMessage('Category deleted!');
+      setActionMessage(t('category_deleted'));
     } catch (err: any) {
       console.error('Delete category error:', err, err?.response);
-      setActionMessage('Failed to delete category.');
+      setActionMessage(t('failed_to_delete_category'));
     }
     setActionLoading(false);
   };
@@ -120,7 +121,7 @@ const CategoriesPage = () => {
   if (isStaff === undefined || (hydrated && isAuthenticated && isStaff === undefined)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bodyC">
-        <div className="text-accentC text-xl font-bold animate-pulse">Checking staff status...</div>
+        <div className="text-accentC text-xl font-bold animate-pulse">{t('checking_staff_status')}</div>
       </div>
     );
   }
@@ -185,7 +186,7 @@ const CategoriesPage = () => {
               >
                 &times;
               </button>
-              <h2 className="text-xl font-bold mb-4 text-heading">{t('add_category')}</h2>
+              <h2 className="text-xl font-bold mb-4 text-heading">{t('add_new_category')}</h2>
               <form onSubmit={handleAddCategory} className="flex flex-col gap-4">
                 <input
                   type="text"
@@ -255,7 +256,7 @@ const CategoriesPage = () => {
                 &times;
               </button>
               <h2 className="text-xl font-bold mb-4 text-heading">{t('delete_category')}</h2>
-              <div className="mb-6 text-muted text-center">{t('delete_confirm', {name: deleteCategory.name})}</div>
+              <div className="mb-6 text-muted text-center">{t('delete_confirm', { name: deleteCategory.name })}</div>
               <div className="flex justify-end gap-2">
                 <button type="button" className="btn btn-ghost" onClick={() => setDeleteCategory(null)}>
                   {t('cancel')}

@@ -1,3 +1,4 @@
+// ClientLayout: Hydrates Redux auth state on the client after mount.
 "use client";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";

@@ -1,3 +1,4 @@
+// cartSlice.ts: Redux slice for cart state, actions, and async thunks.
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from '../../lib/axios';
 
@@ -89,7 +90,26 @@ export const clearCart = createAsyncThunk('cart/clearCart', async (_, { rejectWi
 const cartSlice = createSlice({
   name: 'cart',
   initialState,
-  reducers: {},
+  reducers: {
+    setCart(state, action: PayloadAction<CartItem[]>) {
+      state.cart = action.payload;
+    },
+    addToCartLocal(state, action: PayloadAction<{ product: CartItem }>) {
+      const item = action.payload.product;
+      const existing = state.cart.find(i => i.product_id === item.product_id);
+      if (existing) {
+        existing.quantity += item.quantity;
+      } else {
+        state.cart.push(item);
+      }
+    },
+    removeFromCartLocal(state, action: PayloadAction<string>) {
+      state.cart = state.cart.filter(i => i.product_id !== action.payload);
+    },
+    clearCartLocal(state) {
+      state.cart = [];
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchCart.pending, (state) => {
@@ -143,4 +163,5 @@ const cartSlice = createSlice({
   },
 });
 
-export default cartSlice.reducer; 
+export default cartSlice.reducer;
+export const { setCart, addToCartLocal, removeFromCartLocal, clearCartLocal } = cartSlice.actions; 

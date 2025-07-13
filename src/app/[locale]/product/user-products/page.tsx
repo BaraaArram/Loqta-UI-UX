@@ -1,3 +1,4 @@
+// UserProductsPage: Displays and manages products created by the authenticated user.
 "use client";
 import { useEffect, useState } from "react";
 import { useSelector } from 'react-redux';

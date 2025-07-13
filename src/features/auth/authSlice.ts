@@ -1,3 +1,4 @@
+// authSlice.ts: Redux slice for authentication state, actions, and async thunks.
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 
 interface User {
