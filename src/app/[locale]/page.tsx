@@ -15,6 +15,7 @@ import { XMarkIcon, FunnelIcon, TagIcon, CurrencyDollarIcon, CubeIcon, ArrowUpIc
 import { useTranslation } from 'react-i18next';
 import '@/lib/i18n';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
+import ProductCard from '@/components/ProductCard';
 
 export default function HomePage() {
   const { t } = useTranslation('common');
@@ -484,23 +485,23 @@ export default function HomePage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
               {products.map(product => (
-                <div key={product.product_id || product.id} className="bg-card rounded-2xl shadow-md p-4 flex flex-col gap-4">
-                  <Link href={`/${locale}/product/${product.slug}`} className="block group">
-                    <img src={product.thumbnail || '/product.png'} alt={product.name} className="w-full h-48 object-cover rounded-xl border border-border/20 bg-white group-hover:scale-105 transition" />
-                    <div className="flex-1 flex flex-col gap-2 mt-2">
-                      <h3 className="text-lg font-bold text-heading line-clamp-2 group-hover:text-accent transition">{product.name}</h3>
-                      <p className="text-sm text-muted line-clamp-2">{product.category_detail?.name || ''}</p>
-                      <span className="text-xl font-bold text-accent">${product.price}</span>
-                    </div>
-                  </Link>
-                  <button
-                    className="mt-2 px-4 py-2 rounded-lg bg-accent text-white font-semibold shadow hover:bg-accent/90 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
-                    onClick={() => handleAddToCart(product.product_id || product.id, product.name)}
-                    disabled={addingToCart[product.product_id || product.id] || cartLoading}
-                  >
-                    {addingToCart[product.product_id || product.id] ? t('adding') : t('add_to_cart')}
-                  </button>
-                </div>
+                <ProductCard
+                  key={product.product_id || product.id}
+                  product={{
+                    id: product.product_id || product.id,
+                    slug: product.slug,
+                    name: product.name,
+                    category_detail: product.category_detail,
+                    description: product.description,
+                    price: product.price,
+                    thumbnail: product.thumbnail,
+                    stock: product.stock,
+                    tags: product.tags,
+                  }}
+                  locale={locale}
+                  onAddToCart={() => handleAddToCart(product.product_id || product.id, product.name)}
+                  addingToCart={addingToCart[product.product_id || product.id] || cartLoading}
+                />
               ))}
             </div>
           )}

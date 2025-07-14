@@ -10,6 +10,7 @@ import Swal from 'sweetalert2';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import '@/lib/i18n';
+import ProductCard from '@/components/ProductCard';
 
 const ProductsPage = () => {
   const { t } = useTranslation('common');
@@ -400,18 +401,22 @@ const ProductsPage = () => {
               <div className="col-span-2 text-center text-muted font-semibold">No products found.</div>
             ) : (
               products.map(product => (
-                <div key={product.id} className="bg-white dark:bg-cardC rounded-xl shadow p-4 flex flex-col gap-2 border border-muted/20">
-                  <div className="flex items-center gap-4">
-                    <img src={product.thumbnail} alt={product.name} className="w-20 h-20 object-cover rounded-lg border border-muted/30" />
-                    <div>
-                      <h2 className="text-xl font-bold text-heading">{product.name}</h2>
-                      <div className="text-muted text-sm">{product.category_name}</div>
-                    </div>
-                  </div>
-                  <div className="text-lg font-semibold text-accentC">${product.price}</div>
-                  <div className="text-sm text-muted">Stock: {product.stock}</div>
-                  <Link href={`/${locale}/product/${product.slug}`} className="mt-2 text-accentC font-bold hover:underline">View Details</Link>
-                </div>
+                <ProductCard
+                  key={product.id}
+                  product={{
+                    id: product.id,
+                    slug: product.slug,
+                    name: product.name,
+                    category: Array.isArray(product.category_name) ? product.category_name.join(', ') : product.category_name,
+                    description: product.description,
+                    price: product.price,
+                    thumbnail: product.thumbnail,
+                    stock: product.stock,
+                    tags: product.tags,
+                  }}
+                  locale={locale}
+                  onAddToCart={() => {}}
+                />
               ))
             )}
           </div>

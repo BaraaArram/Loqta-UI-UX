@@ -289,5 +289,8 @@
   "coupon_applied_error": "فشل في تطبيق القسيمة. يرجى التحقق من الرمز والمحاولة مرة أخرى.",
   "with_discount": "مع الخصم",
   "without_discount": "بدون خصم",
-  "original_price": "السعر الأصلي"
+  "original_price": "السعر الأصلي",
+  "registration_confirmation_title": "تحقق من بريدك الإلكتروني!",
+  "registration_confirmation_message": "لقد أرسلنا لك رسالة بريد إلكتروني تحتوي على رابط التفعيل. يرجى التحقق من صندوق الوارد والبريد العشوائي لتفعيل حسابك.",
+  "registration_confirmation_spam": "لم تصلك الرسالة؟ يرجى التحقق من مجلد البريد العشوائي أو غير الهام."
 } 

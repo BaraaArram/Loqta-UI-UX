@@ -74,6 +74,12 @@ const ProfilePage = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
 
   console.log('Redux accessToken:', accessToken, 'hydrated:', hydrated);
+  const showToast = (type: 'success' | 'error', message: string) => {
+    setToast({ show: true, type, message });
+    if (toastTimeout.current) clearTimeout(toastTimeout.current);
+    toastTimeout.current = setTimeout(() => setToast(t => ({ ...t, show: false })), 3500);
+  };
+
   useEffect(() => {
     const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     console.log('Profile effect accessToken:', accessToken, 'hydrated:', hydrated);
@@ -96,6 +102,14 @@ const ProfilePage = () => {
       } catch (err: any) {
         setError(err.message || "Failed to fetch user data");
         showToast('error', err.message || 'Failed to fetch user data');
+        // If unauthorized, clear tokens and redirect to login
+        if (err?.response?.status === 401) {
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+          }
+          router.replace('/login');
+        }
       } finally {
         setUserLoading(false);
       }
@@ -132,12 +146,6 @@ const ProfilePage = () => {
   if (!isAuthenticated) {
     return null;
   }
-
-  const showToast = (type: 'success' | 'error', message: string) => {
-    setToast({ show: true, type, message });
-    if (toastTimeout.current) clearTimeout(toastTimeout.current);
-    toastTimeout.current = setTimeout(() => setToast(t => ({ ...t, show: false })), 3500);
-  };
 
   return (
     <div className="min-h-screen bg-bodyC flex flex-col items-center py-8 px-2 pt-24">
@@ -369,7 +377,6 @@ const ProfilePage = () => {
                       className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-accentC bg-bodyC/60"
                       value={editData?.first_name || ''}
                       onChange={e => setEditData((d: any) => ({ ...d, first_name: e.target.value }))}
-                      required
                     />
                   </div>
                   <div className="flex flex-col gap-1">
@@ -378,7 +385,6 @@ const ProfilePage = () => {
                       className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-accentC bg-bodyC/60"
                       value={editData?.last_name || ''}
                       onChange={e => setEditData((d: any) => ({ ...d, last_name: e.target.value }))}
-                      required
                     />
                   </div>
                   <div className="flex flex-col gap-1">
@@ -387,7 +393,6 @@ const ProfilePage = () => {
                       className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-accentC bg-bodyC/60"
                       value={editData?.phone_number || ''}
                       onChange={e => setEditData((d: any) => ({ ...d, phone_number: e.target.value }))}
-                      required
                     />
                   </div>
                   <div className="flex flex-col gap-1">

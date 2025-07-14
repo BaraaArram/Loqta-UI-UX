@@ -44,7 +44,7 @@ const RegisterPage = () => {
     last_name: '',
     phone_number: '',
   });
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
   const [generalError, setGeneralError] = useState('');
   const [unmatchedFieldErrors, setUnmatchedFieldErrors] = useState<string[]>([]);
   const [showPassword, setShowPassword] = useReactState(false);
@@ -59,16 +59,16 @@ const RegisterPage = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    if (validationErrors[name]) setValidationErrors(prev => ({ ...prev, [name]: '' }));
+    if (validationErrors[name]) setValidationErrors(prev => ({ ...prev, [name]: [] }));
     if (generalError) setGeneralError('');
   };
 
   const validateForm = () => {
-    const errors: Record<string, string> = {};
-    if (!formData.email.trim()) errors.email = t('email_required');
-    if (!formData.username.trim()) errors.username = t('username_required');
-    if (!formData.password) errors.password = t('password_required');
-    if (formData.password !== formData.re_password) errors.re_password = t('passwords_do_not_match');
+    const errors: Record<string, string[]> = {};
+    if (!formData.email.trim()) errors.email = [t('email_required')];
+    if (!formData.username.trim()) errors.username = [t('username_required')];
+    if (!formData.password) errors.password = [t('password_required')];
+    if (formData.password !== formData.re_password) errors.re_password = [t('passwords_do_not_match')];
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -81,16 +81,17 @@ const RegisterPage = () => {
     setUnmatchedFieldErrors([]);
     try {
       await dispatch(register(formData) as any).unwrap();
-      router.push(`/${locale}/login`);
+      router.push(`/${locale}/register/confirmation`);
     } catch (error: any) {
       const errorMessage = getErrorMessage(error);
       if (isValidationError(error)) {
         const fieldErrors = getValidationErrors(error);
-        const newValidationErrors: Record<string, string> = {};
+        const newValidationErrors: Record<string, string[]> = {};
         const unmatched: string[] = [];
         fieldErrors.forEach(({ field, message }) => {
           if (FIELD_LABELS[field]) {
-            newValidationErrors[field] = `${FIELD_LABELS[field]}: ${message}`;
+            if (!newValidationErrors[field]) newValidationErrors[field] = [];
+            newValidationErrors[field].push(`${FIELD_LABELS[field]}: ${message}`);
           } else {
             unmatched.push(`${t(field)}: ${t(message)}`);
           }
@@ -112,7 +113,7 @@ const RegisterPage = () => {
     <div className="min-h-screen flex flex-col bg-bodyC">
       <Header />
       <main className="flex-1 flex items-center justify-center pt-24">
-        <div className="max-w-md w-full rounded-2xl shadow-lg p-8"
+        <div className="max-w-md w-full rounded-2xl shadow-lg p-10 md:p-12 my-12 md:my-20"
           style={{
             background: 'var(--color-card)',
             color: 'var(--color-text)',
@@ -120,7 +121,7 @@ const RegisterPage = () => {
           }}
           dir={isRTL ? 'rtl' : 'ltr'}
         >
-          <div className="text-center mb-8">
+          <div className="text-center mb-10">
             <div className="mx-auto h-16 w-16 rounded-full flex items-center justify-center mb-4"
               style={{ background: 'var(--color-accent-light)' }}>
               <svg className="h-8 w-8" fill="none" stroke="var(--color-accent)" viewBox="0 0 24 24">
@@ -136,54 +137,54 @@ const RegisterPage = () => {
           </div>
           {/* Show all field errors (matched and unmatched) */}
           {Object.values(validationErrors).flat().length > 0 && (
-            <div className="mb-4 p-4 rounded-md text-status-error text-center"
+            <div className="mb-6 p-4 rounded-md text-status-error text-center"
               style={{ background: 'var(--color-error-light)', border: '1px solid var(--color-error)' }}>
               {Object.values(validationErrors).flat().map((msg, i) => <div key={i}>{msg}</div>)}
             </div>
           )}
           {unmatchedFieldErrors.length > 0 && (
-            <div className="mb-4 p-4 rounded-md text-status-error text-center"
+            <div className="mb-6 p-4 rounded-md text-status-error text-center"
               style={{ background: 'var(--color-error-light)', border: '1px solid var(--color-error)' }}>
               {unmatchedFieldErrors.map((msg, i) => <div key={i}>{msg}</div>)}
             </div>
           )}
           {/* Only show generic error if there are no field errors at all */}
           {(Object.values(validationErrors).flat().length === 0 && unmatchedFieldErrors.length === 0 && (error || generalError)) && (
-            <div className="mb-4 p-4 rounded-md text-status-error text-center"
+            <div className="mb-6 p-4 rounded-md text-status-error text-center"
               style={{ background: 'var(--color-error-light)', border: '1px solid var(--color-error)' }}>
               {generalError || getErrorMessage(error)}
             </div>
           )}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="grid grid-cols-1 gap-6">
               <input
                 name="email"
                 type="email"
                 placeholder={t('email_address')}
                 value={formData.email}
                 onChange={handleInputChange}
-                className={`appearance-none block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent sm:text-sm ${validationErrors.email ? 'border-status-error' : ''}`}
+                className={`appearance-none block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent sm:text-sm ${validationErrors.email && validationErrors.email.length > 0 ? 'border-status-error' : ''}`}
                 style={{
                   background: 'var(--color-bg-secondary)',
                   color: 'var(--color-text)',
-                  borderColor: validationErrors.email ? 'var(--color-error)' : 'var(--color-border)'
+                  borderColor: validationErrors.email && validationErrors.email.length > 0 ? 'var(--color-error)' : 'var(--color-border)'
                 }}
               />
-              {validationErrors.email && <p className="text-sm text-status-error">{validationErrors.email}</p>}
+              {validationErrors.email && validationErrors.email.map((msg, i) => <p key={i} className="text-sm text-status-error">{msg}</p>)}
               <input
                 name="username"
                 type="text"
                 placeholder={t('username')}
                 value={formData.username}
                 onChange={handleInputChange}
-                className={`appearance-none block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent sm:text-sm ${validationErrors.username ? 'border-status-error' : ''}`}
+                className={`appearance-none block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent sm:text-sm ${validationErrors.username && validationErrors.username.length > 0 ? 'border-status-error' : ''}`}
                 style={{
                   background: 'var(--color-bg-secondary)',
                   color: 'var(--color-text)',
-                  borderColor: validationErrors.username ? 'var(--color-error)' : 'var(--color-border)'
+                  borderColor: validationErrors.username && validationErrors.username.length > 0 ? 'var(--color-error)' : 'var(--color-border)'
                 }}
               />
-              {validationErrors.username && <p className="text-sm text-status-error">{validationErrors.username}</p>}
+              {validationErrors.username && validationErrors.username.map((msg, i) => <p key={i} className="text-sm text-status-error">{msg}</p>)}
               <input
                 name="first_name"
                 type="text"
@@ -197,7 +198,7 @@ const RegisterPage = () => {
                   borderColor: 'var(--color-border)'
                 }}
               />
-              {validationErrors.first_name && <p className="text-sm text-status-error">{validationErrors.first_name}</p>}
+              {validationErrors.first_name && validationErrors.first_name.map((msg, i) => <p key={i} className="text-sm text-status-error">{msg}</p>)}
               <input
                 name="last_name"
                 type="text"
@@ -211,7 +212,7 @@ const RegisterPage = () => {
                   borderColor: 'var(--color-border)'
                 }}
               />
-              {validationErrors.last_name && <p className="text-sm text-status-error">{validationErrors.last_name}</p>}
+              {validationErrors.last_name && validationErrors.last_name.map((msg, i) => <p key={i} className="text-sm text-status-error">{msg}</p>)}
               <input
                 name="phone_number"
                 type="text"
@@ -225,7 +226,7 @@ const RegisterPage = () => {
                   borderColor: 'var(--color-border)'
                 }}
               />
-              {validationErrors.phone_number && <p className="text-sm text-status-error">{validationErrors.phone_number}</p>}
+              {validationErrors.phone_number && validationErrors.phone_number.map((msg, i) => <p key={i} className="text-sm text-status-error">{msg}</p>)}
               <div className="relative">
                 <input
                   name="password"
@@ -233,11 +234,11 @@ const RegisterPage = () => {
                   placeholder={t('password')}
                   value={formData.password}
                   onChange={handleInputChange}
-                  className={`appearance-none block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent sm:text-sm ${validationErrors.password ? 'border-status-error' : ''}`}
+                  className={`appearance-none block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent sm:text-sm ${validationErrors.password && validationErrors.password.length > 0 ? 'border-status-error' : ''}`}
                   style={{
                     background: 'var(--color-bg-secondary)',
                     color: 'var(--color-text)',
-                    borderColor: validationErrors.password ? 'var(--color-error)' : 'var(--color-border)'
+                    borderColor: validationErrors.password && validationErrors.password.length > 0 ? 'var(--color-error)' : 'var(--color-border)'
                   }}
                 />
                 <button
@@ -254,7 +255,7 @@ const RegisterPage = () => {
                   )}
                 </button>
               </div>
-              {validationErrors.password && <p className="text-sm text-status-error">{validationErrors.password}</p>}
+              {validationErrors.password && validationErrors.password.map((msg, i) => <p key={i} className="text-sm text-status-error">{msg}</p>)}
               <div className="relative">
                 <input
                   name="re_password"
@@ -262,11 +263,11 @@ const RegisterPage = () => {
                   placeholder={t('confirm_password')}
                   value={formData.re_password}
                   onChange={handleInputChange}
-                  className={`appearance-none block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent sm:text-sm ${validationErrors.re_password ? 'border-status-error' : ''}`}
+                  className={`appearance-none block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent sm:text-sm ${validationErrors.re_password && validationErrors.re_password.length > 0 ? 'border-status-error' : ''}`}
                   style={{
                     background: 'var(--color-bg-secondary)',
                     color: 'var(--color-text)',
-                    borderColor: validationErrors.re_password ? 'var(--color-error)' : 'var(--color-border)'
+                    borderColor: validationErrors.re_password && validationErrors.re_password.length > 0 ? 'var(--color-error)' : 'var(--color-border)'
                   }}
                 />
                 <button
@@ -283,12 +284,12 @@ const RegisterPage = () => {
                   )}
                 </button>
               </div>
-              {validationErrors.re_password && <p className="text-sm text-status-error">{validationErrors.re_password}</p>}
+              {validationErrors.re_password && validationErrors.re_password.map((msg, i) => <p key={i} className="text-sm text-status-error">{msg}</p>)}
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-button-text bg-accent hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full flex justify-center py-3 px-4 border border-transparent text-base font-semibold rounded-md text-button-text bg-accent hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? t('registering') : t('register')}
             </button>

@@ -303,5 +303,14 @@
   "coupon_applied_error": "Failed to apply coupon. Please check the code and try again.",
   "with_discount": "With discount",
   "without_discount": "Without discount",
-  "original_price": "Original price"
+  "original_price": "Original price",
+  "confirm_password": "Confirm Password",
+  "first_name_optional": "First Name (optional)",
+  "last_name_optional": "Last Name (optional)",
+  "phone_number_optional": "Phone Number (optional)",
+  "show_password": "Show Password",
+  "hide_password": "Hide Password",
+  "registration_confirmation_title": "Check your email!",
+  "registration_confirmation_message": "We have sent you an email with an activation link. Please check your inbox and spam folder to activate your account.",
+  "registration_confirmation_spam": "Didn't receive the email? Please check your spam or junk folder."
 } 

@@ -149,6 +149,14 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
       const res = await api.post('/api/v1/orders/', body, { withCredentials: true });
       setOrderMessage(t('order_placed_successfully'));
       setOrderSuccess(true);
+      if (isAuthenticated) {
+        await dispatch(clearCart());
+      } else {
+        dispatch(clearCartLocal());
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('cart');
+        }
+      }
       dispatch(fetchCart());
       Swal.fire({
         icon: 'success',

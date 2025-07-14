@@ -674,3 +674,51 @@ html[dir="rtl"] .text-right {
 .text-justify {
   text-align: justify;
 }
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fade-in 1s ease both;
+}
+
+@keyframes slide-in-up {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-in-up {
+  animation: slide-in-up 0.8s cubic-bezier(0.4,0,0.2,1) both;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+.animate-bounce {
+  animation: bounce 1.2s infinite;
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-16px) scale(1.04); }
+}
+.animate-float-slow {
+  animation: float-slow 4s ease-in-out infinite;
+}
+
+@keyframes float-medium {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-10px) scale(1.02); }
+}
+.animate-float-medium {
+  animation: float-medium 2.5s ease-in-out infinite;
+}
+
+@keyframes float-fast {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-6px) scale(1.01); }
+}
+.animate-float-fast {
+  animation: float-fast 1.5s ease-in-out infinite;
+}

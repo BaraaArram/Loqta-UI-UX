@@ -50,9 +50,6 @@ export default function OrdersPage() {
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
-  const [deletingOrder, setDeletingOrder] = useState<string | null>(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [payingOrderId, setPayingOrderId] = useState<string | null>(null);
   const [payError, setPayError] = useState<string | null>(null);
 
@@ -68,56 +65,6 @@ export default function OrdersPage() {
       setOrders([]);
     }
     setLoading(false);
-  };
-
-  const handleDeleteOrder = async (orderId: string) => {
-    const result = await Swal.fire({
-      title: 'Delete Order',
-      text: 'Are you sure you want to delete this order? This action cannot be undone.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel'
-    });
-
-    if (!result.isConfirmed) return;
-    
-    setDeleteLoading(true);
-    setDeleteError(null);
-    try {
-      await api.delete(`/api/v1/orders/${orderId}/`);
-      setDeletingOrder(null);
-      fetchOrders(page);
-      
-      // Show success message
-      Swal.fire({
-        title: 'Deleted!',
-        text: 'Order deleted successfully.',
-        icon: 'success',
-        timer: 2000,
-        timerProgressBar: true,
-        showConfirmButton: false,
-        toast: true,
-        position: 'top-end',
-        background: '#10b981',
-        color: '#ffffff'
-      });
-    } catch (err: any) {
-      const errorMessage = err?.message || 'Failed to delete order.';
-      setDeleteError(errorMessage);
-      
-      // Show error alert
-      Swal.fire({
-        title: 'Error!',
-        text: errorMessage,
-        icon: 'error',
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#ef4444'
-      });
-    }
-    setDeleteLoading(false);
   };
 
   const handlePayNow = async (orderId: string) => {
@@ -239,14 +186,6 @@ export default function OrdersPage() {
                           )}
                         </button>
                       )}
-                      <button
-                        className="p-2 rounded-full hover:bg-red-100 text-red-600 transition"
-                        title="Delete Order"
-                        onClick={() => handleDeleteOrder(order.order_id)}
-                        disabled={deleteLoading}
-                      >
-                        <TrashIcon className="h-6 w-6" />
-                      </button>
                     </div>
                   </div>
                   {/* Show payment error if any */}

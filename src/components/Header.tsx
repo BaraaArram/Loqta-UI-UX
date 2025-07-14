@@ -85,7 +85,7 @@ function NavLink({
       {Icon && <Icon className="h-4 w-4" />}
       {children}
       {isActive && (
-        <div className="absolute inset-0 rounded-xl bg-accent/10 animate-pulse" />
+        <span className="absolute left-4 right-4 bottom-1 h-1 rounded-full bg-accent transition-all duration-300" style={{zIndex:2}} />
       )}
     </Link>
   );
@@ -124,7 +124,8 @@ export default function Header() {
     return null;
   }
 
-  const cartItemCount = Array.isArray(cart) ? cart.reduce((sum, item) => sum + (item.quantity || 1), 0) : 0;
+  const cartItems = cart?.items || [];
+  const cartItemCount = Array.isArray(cartItems) ? cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0) : 0;
 
   // Language switcher handler
   const switchLanguage = () => {
@@ -143,7 +144,7 @@ export default function Header() {
   };
 
   return (
-    <header className={`fixed top-0 left-0 w-full z-40 bg-card/80 backdrop-blur-xl shadow-lg border-b border-border/50 transition-all duration-500 ${isRTL ? 'rtl' : 'ltr'}`}>
+    <header className={`fixed top-0 left-0 w-full z-40 bg-card backdrop-blur-xl shadow-lg border-b border-border/50 transition-all duration-500 ${isRTL ? 'rtl' : 'ltr'}`}>
       <div className={`max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 py-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
         {/* Enhanced Logo and Brand */}
         <Link 
@@ -198,7 +199,7 @@ export default function Header() {
 
         {/* Enhanced Desktop Navigation */}
         <nav className="hidden lg:flex items-center gap-2 flex-1 justify-center">
-          <NavLink href={getLocaleUrl('/')} isActive={pathname === getLocaleUrl('/')} icon={HomeIcon}>
+          <NavLink href={getLocaleUrl('/')} isActive={pathname === getLocaleUrl('/') || pathname === `/${i18n.language}` || pathname === `/${i18n.language}/`} icon={HomeIcon}>
             {t('home')}
           </NavLink>
           
@@ -377,7 +378,7 @@ export default function Header() {
         <nav className="bg-card/95 backdrop-blur-xl border-t border-border/50 px-4 pb-6 pt-4 flex flex-col gap-3">
           <NavLink 
             href={getLocaleUrl('/')} 
-            isActive={pathname === getLocaleUrl('/')} 
+            isActive={pathname === getLocaleUrl('/') || pathname === `/${i18n.language}` || pathname === `/${i18n.language}/`} 
             icon={HomeIcon}
             onClick={() => setMenuOpen(false)}
           >

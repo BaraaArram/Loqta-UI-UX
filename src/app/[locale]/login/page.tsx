@@ -85,14 +85,14 @@ const LoginPage = () => {
     <div className="min-h-screen flex flex-col bg-bodyC">
       <Header />
       <main className="flex-1 flex items-center justify-center pt-24">
-        <div className="max-w-md w-full rounded-2xl shadow-lg p-8"
+        <div className="max-w-md w-full rounded-2xl shadow-lg p-10 md:p-12 my-12 md:my-20"
           style={{
             background: 'var(--color-card)',
             color: 'var(--color-text)',
             border: '1px solid var(--color-border)'
           }}
         >
-          <div className="text-center mb-8">
+          <div className="text-center mb-10">
             <div className="mx-auto h-16 w-16 rounded-full flex items-center justify-center mb-4"
               style={{ background: 'var(--color-accent-light)' }}>
               <svg className="h-8 w-8" fill="none" stroke="var(--color-accent)" viewBox="0 0 24 24">
@@ -107,13 +107,13 @@ const LoginPage = () => {
             </p>
           </div>
           {error && (
-            <div className="mb-4 p-4 rounded-md text-status-error text-center"
+            <div className="mb-6 p-4 rounded-md text-status-error text-center"
               style={{ background: 'var(--color-error-light)', border: '1px solid var(--color-error)' }}>
               {getErrorMessage(error)}
             </div>
           )}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="space-y-6">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium mb-1 text-heading">{t('email_address')}</label>
                 <input
@@ -124,7 +124,7 @@ const LoginPage = () => {
                   required
                   value={formData.email}
                   onChange={handleInputChange}
-                  className={`appearance-none relative block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent sm:text-sm ${validationErrors.email ? 'border-status-error' : ''}`}
+                  className={`appearance-none relative block w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent sm:text-sm ${validationErrors.email ? 'border-status-error' : ''}`}
                   style={{
                     background: 'var(--color-bg-secondary)',
                     color: 'var(--color-text)',
@@ -147,7 +147,7 @@ const LoginPage = () => {
                     required
                     value={formData.password}
                     onChange={handleInputChange}
-                    className={`appearance-none relative block w-full px-3 py-2 pr-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent sm:text-sm ${validationErrors.password ? 'border-status-error' : ''}`}
+                    className={`appearance-none relative block w-full px-4 py-3 pr-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent sm:text-sm ${validationErrors.password ? 'border-status-error' : ''}`}
                     style={{
                       background: 'var(--color-bg-secondary)',
                       color: 'var(--color-text)',
@@ -176,12 +176,15 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-button-text bg-accent hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full flex justify-center py-3 px-4 border border-transparent text-base font-semibold rounded-md text-button-text bg-accent hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? t('signing_in') : t('sign_in')}
             </button>
-            <div className="text-center mt-2">
-              <Link href="/forgot-password" className="text-sm text-accent hover:text-accent-dark transition-colors">{t('forgot_password')}</Link>
+            <div className="flex flex-col gap-3 items-center mt-6">
+              <Link href="/forgot-password" className="inline-flex items-center gap-2 font-bold text-accent hover:underline text-base transition">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01" /></svg>
+                {t('forgot_password')}
+              </Link>
             </div>
           </form>
         </div>

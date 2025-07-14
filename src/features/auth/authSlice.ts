@@ -116,7 +116,12 @@ export const register = createAsyncThunk(
       const res = await axios.post('/auth/register/', userData);
       return res.data;
     } catch (err: any) {
-      return rejectWithValue(err.response?.data?.detail || err.message || 'Registration failed');
+      // Only store serializable error info
+      return rejectWithValue({
+        message: err?.response?.data?.detail || err?.message || 'Registration failed',
+        status: err?.response?.status,
+        data: err?.response?.data,
+      });
     }
   }
 );

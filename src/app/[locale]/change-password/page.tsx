@@ -26,10 +26,13 @@ const ChangePasswordPage = () => {
     setFieldErrors(null);
     setLoading(true);
     try {
-      await api.post("/auth/set-password/", {
+      const requestBody = {
         current_password: currentPassword,
         new_password: newPassword,
-      });
+      };
+      console.log('[ChangePassword] Request:', requestBody);
+      const response = await api.post("/auth/set-password/", requestBody);
+      console.log('[ChangePassword] Response:', response);
       
       // Show success alert
       Swal.fire({
@@ -51,6 +54,7 @@ const ChangePasswordPage = () => {
         router.push(`/${params?.locale || ''}/profile?password_changed=1`);
       }, 500);
     } catch (err: any) {
+      console.error('[ChangePassword] Error:', err);
       // Try to extract field errors from the API response
       const errors = err?.originalData?.errors;
       if (errors && typeof errors === 'object') {
